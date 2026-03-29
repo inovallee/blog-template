@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ article.metaTitle ?? article.title }}{% endblock %}
+{% block meta %}
+<meta name="description" content="{{ article.metaDescription ?? article.excerpt }}">
+<link rel="canonical" href="https://{{ app.request.host }}/{{ article.slug }}">
+<meta property="og:title" content="{{ article.metaTitle ?? article.title }}">
+<meta property="og:description" content="{{ article.metaDescription ?? article.excerpt }}">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://{{ app.request.host }}/{{ article.slug }}">
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "{{ article.title|e('js') }}",
+    "description": "{{ (article.metaDescription ?? article.excerpt)|e('js') }}",
+    "datePublished": "{{ article.publishedAt ? article.publishedAt|date('c') : article.createdAt|date('c') }}",
+    "author": {"@type": "Organization", "name": "{{ app.request.host }}"},
+    "publisher": {"@type": "Organization", "name": "{{ app.request.host }}"}
+}
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb" style="font-size:.85rem;">
+                <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
+                <li class="breadcrumb-item">
+                    <a href="{{ path(article.category == 'evergreen' ? 'app_category_evergreen' : 'app_category_actualites') }}">
+                        {{ article.category == 'evergreen' ? 'Guides' : 'Actualités' }}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">{{ article.title|length > 40 ? article.title[:40] ~ '...' : article.title }}</li>
+            </ol>
+        </nav>
+
+        <!-- Article header -->
+        <div class="mb-4">
+            <span class="category-badge {{ article.category == 'evergreen' ? 'badge-evergreen' : 'badge-actualites' }} mb-2 d-inline-block">
+                {{ article.category == 'evergreen' ? 'Guide' : 'Actualité' }}
+            </span>
+            <h1 style="font-weight:700; font-size:2rem; color:var(--primary); line-height:1.3;">{{ article.title }}</h1>
+            {% if article.excerpt %}
+                <p class="lead" style="color:var(--text-light); font-size:1.1rem;">{{ article.excerpt }}</p>
+            {% endif %}
+            <div class="d-flex gap-3 text-muted" style="font-size:.85rem;">
+                <span><i class="bi bi-calendar3 me-1"></i>{{ article.publishedAt ? article.publishedAt|date('d F Y') : article.createdAt|date('d F Y') }}</span>
+                {% if article.tags %}
+                <span><i class="bi bi-tags me-1"></i>{{ article.tags|join(', ') }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <hr class="mb-4">
+
+        <!-- Article content -->
+        <div class="article-content">
+            {{ article.content|raw }}
+        </div>
+
+        <!-- Sources -->
+        {% if article.sources and article.sources|length > 0 %}
+        <div class="card mt-5" style="border-radius:12px; border:1px solid var(--border);">
+            <div class="card-header" style="background:#f0f4f8; border-bottom:1px solid var(--border);">
+                <strong><i class="bi bi-bookmark me-1"></i>Sources et références</strong>
+            </div>
+            <div class="card-body">
+                <ol style="font-size:.9rem;">
+                    {% for source in article.sources %}
+                    <li class="mb-1">
+                        {% if source.url is defined %}
+                            <a href="{{ source.url }}" target="_blank" rel="noopener nofollow">{{ source.titre ?? 'Source' }}</a>
+                        {% else %}
+                            {{ source.titre ?? source }}
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- CTA -->
+        <div class="text-center mt-5 p-4" style="background:linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); border-radius:12px; color:#fff;">
+            <h3 style="font-weight:700;">Vous avez trouvé cet article utile ?</h3>
+            <p class="mb-3" style="opacity:.9;">Découvrez nos autres guides et analyses.</p>
+            <a href="{{ path('app_home') }}" class="btn btn-light btn-lg">
+                <i class="bi bi-arrow-left me-1"></i>Voir tous les articles
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
