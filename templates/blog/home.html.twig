@@ -2,7 +2,7 @@
 
 {% block title %}{{ app.request.host }} — Blog{% endblock %}
 {% block meta %}
-<meta name="description" content="Découvrez nos articles, guides et actualités sur {{ app.request.host }}">
+<meta name="description" content="Guides experts, analyses et actualités pour professionnels sur {{ app.request.host }}">
 <link rel="canonical" href="https://{{ app.request.host }}/">
 {% endblock %}
 
@@ -26,29 +26,29 @@
 
 {% block hero %}
 <section class="hero">
-    <div class="container position-relative" style="z-index:1;">
+    <div style="max-width:1200px; margin:0 auto; padding:0 1.5rem;">
         <div class="row align-items-center">
             <div class="col-lg-7">
-                <p class="mb-2" style="font-size:.85rem; opacity:.7; text-transform:uppercase; letter-spacing:.1em; font-weight:600;">Blog professionnel</p>
-                <h1>Bienvenue sur {{ app.request.host }}</h1>
-                <p class="mb-4">Guides experts, analyses approfondies et actualités pour professionnels.</p>
+                <p class="mb-2" style="font-size:.78rem; opacity:.5; text-transform:uppercase; letter-spacing:.12em; font-weight:600;">Blog professionnel</p>
+                <h1>{{ app.request.host }}</h1>
+                <p class="mb-4" style="max-width:480px;">Guides experts, analyses approfondies et actualités pour professionnels du secteur.</p>
                 <div class="d-flex gap-2">
-                    <a href="{{ path('app_category_evergreen') }}" class="btn btn-light btn-sm px-3"><i class="bi bi-book me-1"></i>Guides</a>
-                    <a href="{{ path('app_category_actualites') }}" class="btn btn-outline-light btn-sm px-3"><i class="bi bi-lightning me-1"></i>Actualités</a>
+                    <a href="{{ path('app_category_evergreen') }}" class="btn btn-sm px-3" style="background:var(--accent); color:#fff; border-radius:8px; font-weight:600; font-size:.85rem; box-shadow:0 2px 8px rgba(49,107,255,.3);"><i class="bi bi-book me-1"></i>Guides</a>
+                    <a href="{{ path('app_category_actualites') }}" class="btn btn-sm btn-outline-light px-3" style="border-radius:8px; font-size:.85rem;"><i class="bi bi-lightning me-1"></i>Actualités</a>
                 </div>
             </div>
-            <div class="col-lg-5 d-none d-lg-flex justify-content-end gap-4">
-                <div class="hero-stat">
-                    <div class="stat-num">{{ articles|length }}</div>
-                    <div class="stat-label">Articles</div>
+            <div class="col-lg-5 d-none d-lg-flex justify-content-end gap-5">
+                <div class="hero-stat text-center">
+                    <div class="num">{{ articles|length }}</div>
+                    <div class="label">Articles</div>
                 </div>
-                <div class="hero-stat">
-                    <div class="stat-num">{{ articles|filter(a => a.category == 'evergreen')|length }}</div>
-                    <div class="stat-label">Guides</div>
+                <div class="hero-stat text-center">
+                    <div class="num">{{ articles|filter(a => a.category == 'evergreen')|length }}</div>
+                    <div class="label">Guides</div>
                 </div>
-                <div class="hero-stat">
-                    <div class="stat-num">{{ articles|filter(a => a.category == 'actualites')|length }}</div>
-                    <div class="stat-label">Actualités</div>
+                <div class="hero-stat text-center">
+                    <div class="num">{{ articles|filter(a => a.category == 'actualites')|length }}</div>
+                    <div class="label">Actualités</div>
                 </div>
             </div>
         </div>
@@ -59,60 +59,59 @@
 {% block body %}
 {% if articles is empty %}
     <div class="text-center py-5">
-        <i class="bi bi-journal-text display-1 text-muted"></i>
-        <p class="mt-3 text-muted fs-5">Les articles arrivent bientôt.</p>
+        <i class="bi bi-journal-text display-1" style="color:var(--border);"></i>
+        <p class="mt-3" style="color:var(--text-light); font-size:1.1rem;">Les articles arrivent bientôt.</p>
     </div>
 {% else %}
 
-{# Featured article (latest) #}
+{# Featured article #}
 {% set featured = articles|first %}
-<div class="featured-card p-4 mb-4 fade-up">
+<div class="featured p-4 mb-5" style="border-radius:14px;">
     <div class="row align-items-center">
-        <div class="col-lg-8">
+        <div class="col-lg-9">
             <div class="d-flex align-items-center gap-2 mb-2">
-                <span class="featured-label"><i class="bi bi-star-fill me-1"></i>À la une</span>
-                <span class="category-badge {{ featured.category == 'evergreen' ? 'badge-evergreen' : 'badge-actualites' }}">
-                    {{ featured.category == 'evergreen' ? 'Guide' : 'Actualité' }}
-                </span>
+                <span style="background:var(--accent); color:#fff; font-size:.65rem; font-weight:700; padding:.2rem .6rem; border-radius:4px; text-transform:uppercase; letter-spacing:.04em;"><i class="bi bi-star-fill me-1"></i>À la une</span>
+                <span class="category-pill">{{ featured.category == 'evergreen' ? 'Guide' : 'Actualité' }}</span>
             </div>
-            <h2 style="font-weight:800; font-size:1.4rem; line-height:1.3;">
-                <a href="{{ path('app_article', {slug: featured.slug}) }}" class="text-decoration-none text-dark">{{ featured.title }}</a>
+            <h2 style="font-weight:800; font-size:1.35rem; line-height:1.35; color:var(--text-dark);">
+                <a href="{{ path('app_article', {slug: featured.slug}) }}" class="text-decoration-none" style="color:var(--text-dark);">{{ featured.title }}</a>
             </h2>
-            <p class="text-muted mb-3" style="font-size:.95rem;">{{ featured.excerpt|length > 200 ? featured.excerpt[:200] ~ '...' : featured.excerpt }}</p>
-            <div class="d-flex align-items-center gap-3">
-                <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ featured.publishedAt ? featured.publishedAt|date('d/m/Y') : featured.createdAt|date('d/m/Y') }}</small>
-                <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ (featured.content|striptags|split(' ')|length / 200)|round }} min de lecture</small>
-                <a href="{{ path('app_article', {slug: featured.slug}) }}" class="btn btn-sm btn-primary ms-auto">Lire l'article <i class="bi bi-arrow-right ms-1"></i></a>
+            {% if featured.excerpt %}
+            <p style="color:var(--text-light); font-size:.92rem; line-height:1.6;">{{ featured.excerpt|length > 200 ? featured.excerpt[:200] ~ '...' : featured.excerpt }}</p>
+            {% endif %}
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <small style="color:var(--text-light);"><i class="bi bi-calendar3 me-1"></i>{{ featured.publishedAt ? featured.publishedAt|date('d/m/Y') : featured.createdAt|date('d/m/Y') }}</small>
+                <small style="color:var(--text-light);"><i class="bi bi-clock me-1"></i>{{ (featured.content|striptags|split(' ')|length / 250)|round(0, 'ceil') }} min de lecture</small>
+                <a href="{{ path('app_article', {slug: featured.slug}) }}" class="btn btn-sm ms-auto" style="background:var(--accent); color:#fff; border-radius:8px; font-weight:600; font-size:.82rem; box-shadow:0 2px 8px rgba(49,107,255,.25);">Lire l'article <i class="bi bi-arrow-right ms-1"></i></a>
             </div>
         </div>
     </div>
 </div>
 
-{# Rest of articles #}
+{# All articles grid #}
 {% if articles|length > 1 %}
-<h2 class="mb-3 mt-5" style="font-weight:800; font-size:1.3rem; color:var(--primary);">
-    <i class="bi bi-grid me-1"></i>Tous les articles
-</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 style="font-weight:800; font-size:1.2rem; color:var(--text-dark); margin:0;">Tous les articles</h2>
+    <span style="color:var(--text-light); font-size:.82rem;">{{ articles|length }} article{{ articles|length > 1 ? 's' : '' }}</span>
+</div>
 <div class="row g-4">
     {% for article in articles|slice(1) %}
-    <div class="col-md-6 col-lg-4 fade-up">
+    <div class="col-md-6 col-lg-4">
         <div class="article-card h-100">
             <div class="card-body d-flex flex-column">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="category-badge {{ article.category == 'evergreen' ? 'badge-evergreen' : 'badge-actualites' }}">
-                        {{ article.category == 'evergreen' ? 'Guide' : 'Actualité' }}
-                    </span>
-                    <span class="reading-time"><i class="bi bi-clock me-1"></i>{{ (article.content|striptags|split(' ')|length / 200)|round }} min</span>
+                    <span class="category-pill">{{ article.category == 'evergreen' ? 'Guide' : 'Actualité' }}</span>
+                    <span class="reading-time"><i class="bi bi-clock me-1"></i>{{ (article.content|striptags|split(' ')|length / 250)|round(0, 'ceil') }} min</span>
                 </div>
-                <h3 class="card-title">
-                    <a href="{{ path('app_article', {slug: article.slug}) }}" class="text-decoration-none text-dark">
-                        {{ article.title }}
-                    </a>
+                <h3 class="card-title flex-grow-1">
+                    <a href="{{ path('app_article', {slug: article.slug}) }}" class="text-decoration-none" style="color:var(--text-dark);">{{ article.title }}</a>
                 </h3>
-                <p class="card-text flex-grow-1">{{ article.excerpt|length > 120 ? article.excerpt[:120] ~ '...' : article.excerpt }}</p>
+                {% if article.excerpt %}
+                <p class="card-text">{{ article.excerpt|length > 120 ? article.excerpt[:120] ~ '...' : article.excerpt }}</p>
+                {% endif %}
                 <div class="d-flex justify-content-between align-items-center mt-auto pt-3" style="border-top:1px solid var(--border);">
-                    <small class="text-muted">{{ article.publishedAt ? article.publishedAt|date('d/m/Y') : article.createdAt|date('d/m/Y') }}</small>
-                    <a href="{{ path('app_article', {slug: article.slug}) }}" class="btn btn-sm btn-outline-primary">Lire <i class="bi bi-arrow-right ms-1"></i></a>
+                    <small style="color:var(--text-light);">{{ article.publishedAt ? article.publishedAt|date('d/m/Y') : article.createdAt|date('d/m/Y') }}</small>
+                    <a href="{{ path('app_article', {slug: article.slug}) }}" style="color:var(--accent); font-size:.82rem; font-weight:600;">Lire <i class="bi bi-arrow-right ms-1"></i></a>
                 </div>
             </div>
         </div>
