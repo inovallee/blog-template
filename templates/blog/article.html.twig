@@ -1,13 +1,26 @@
 {% extends 'base.html.twig' %}
 
+{% set readingTime = (article.content|striptags|split(' ')|length / 200)|round %}
+{% set domain = app.request.host %}
+
 {% block title %}{{ article.metaTitle ?? article.title }}{% endblock %}
 {% block meta %}
 <meta name="description" content="{{ article.metaDescription ?? article.excerpt }}">
-<link rel="canonical" href="https://{{ app.request.host }}/{{ article.slug }}">
+<link rel="canonical" href="https://{{ domain }}/{{ article.slug }}">
 <meta property="og:title" content="{{ article.metaTitle ?? article.title }}">
 <meta property="og:description" content="{{ article.metaDescription ?? article.excerpt }}">
 <meta property="og:type" content="article">
-<meta property="og:url" content="https://{{ app.request.host }}/{{ article.slug }}">
+<meta property="og:url" content="https://{{ domain }}/{{ article.slug }}">
+<meta property="og:site_name" content="{{ domain }}">
+<meta property="article:published_time" content="{{ article.publishedAt ? article.publishedAt|date('c') : article.createdAt|date('c') }}">
+{% if article.tags %}
+{% for tag in article.tags %}
+<meta property="article:tag" content="{{ tag }}">
+{% endfor %}
+{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ article.metaTitle ?? article.title }}">
+<meta name="twitter:description" content="{{ article.metaDescription ?? article.excerpt }}">
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",
@@ -15,18 +28,35 @@
     "headline": "{{ article.title|e('js') }}",
     "description": "{{ (article.metaDescription ?? article.excerpt)|e('js') }}",
     "datePublished": "{{ article.publishedAt ? article.publishedAt|date('c') : article.createdAt|date('c') }}",
-    "author": {"@type": "Organization", "name": "{{ app.request.host }}"},
-    "publisher": {"@type": "Organization", "name": "{{ app.request.host }}"}
+    "dateModified": "{{ article.deployedAt ? article.deployedAt|date('c') : article.createdAt|date('c') }}",
+    "wordCount": {{ article.content|striptags|split(' ')|length }},
+    "author": {"@type": "Organization", "name": "{{ domain }}", "url": "https://{{ domain }}"},
+    "publisher": {"@type": "Organization", "name": "{{ domain }}", "url": "https://{{ domain }}"},
+    "mainEntityOfPage": {"@type": "WebPage", "@id": "https://{{ domain }}/{{ article.slug }}"},
+    "articleSection": "{{ article.category == 'evergreen' ? 'Guides' : 'Actualités' }}"
+    {% if article.keyword %}, "keywords": "{{ article.keyword|e('js') }}"{% endif %}
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://{{ domain }}/"},
+        {"@type": "ListItem", "position": 2, "name": "{{ article.category == 'evergreen' ? 'Guides' : 'Actualités' }}", "item": "https://{{ domain }}/{{ article.category == 'evergreen' ? 'guides' : 'actualites' }}"},
+        {"@type": "ListItem", "position": 3, "name": "{{ article.title|e('js') }}"}
+    ]
 }
 </script>
 {% endblock %}
 
 {% block body %}
 <div class="row">
-    <div class="col-lg-8 mx-auto">
+    <!-- Article principal -->
+    <div class="col-lg-8">
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="mb-3">
-            <ol class="breadcrumb" style="font-size:.85rem;">
+            <ol class="breadcrumb" style="font-size:.82rem;">
                 <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
                 <li class="breadcrumb-item">
                     <a href="{{ path(article.category == 'evergreen' ? 'app_category_evergreen' : 'app_category_actualites') }}">
@@ -42,35 +72,37 @@
             <span class="category-badge {{ article.category == 'evergreen' ? 'badge-evergreen' : 'badge-actualites' }} mb-2 d-inline-block">
                 {{ article.category == 'evergreen' ? 'Guide' : 'Actualité' }}
             </span>
-            <h1 style="font-weight:700; font-size:2rem; color:var(--primary); line-height:1.3;">{{ article.title }}</h1>
+            <h1 style="font-weight:800; font-size:2rem; color:var(--primary); line-height:1.3; letter-spacing:-.02em;">{{ article.title }}</h1>
             {% if article.excerpt %}
-                <p class="lead" style="color:var(--text-light); font-size:1.1rem;">{{ article.excerpt }}</p>
+                <p class="lead" style="color:var(--text-light); font-size:1.05rem; line-height:1.6;">{{ article.excerpt }}</p>
             {% endif %}
-            <div class="d-flex gap-3 text-muted" style="font-size:.85rem;">
+            <div class="d-flex flex-wrap gap-3 text-muted mt-3 pb-3" style="font-size:.82rem; border-bottom:1px solid var(--border);">
                 <span><i class="bi bi-calendar3 me-1"></i>{{ article.publishedAt ? article.publishedAt|date('d F Y') : article.createdAt|date('d F Y') }}</span>
+                <span><i class="bi bi-clock me-1"></i>{{ readingTime }} min de lecture</span>
+                {% if article.keyword %}
+                <span><i class="bi bi-key me-1"></i>{{ article.keyword }}</span>
+                {% endif %}
                 {% if article.tags %}
                 <span><i class="bi bi-tags me-1"></i>{{ article.tags|join(', ') }}</span>
                 {% endif %}
             </div>
         </div>
 
-        <hr class="mb-4">
-
         <!-- Article content -->
-        <div class="article-content">
+        <div class="article-content" id="articleContent">
             {{ article.content|raw }}
         </div>
 
         <!-- Sources -->
         {% if article.sources and article.sources|length > 0 %}
         <div class="card mt-5" style="border-radius:12px; border:1px solid var(--border);">
-            <div class="card-header" style="background:#f0f4f8; border-bottom:1px solid var(--border);">
-                <strong><i class="bi bi-bookmark me-1"></i>Sources et références</strong>
+            <div class="card-header" style="background:linear-gradient(135deg, #f0f9ff, #e0f2fe); border-bottom:1px solid var(--border); border-radius:12px 12px 0 0;">
+                <strong><i class="bi bi-journal-bookmark me-1"></i>Sources et références</strong>
             </div>
             <div class="card-body">
-                <ol style="font-size:.9rem;">
+                <ol style="font-size:.88rem;">
                     {% for source in article.sources %}
-                    <li class="mb-1">
+                    <li class="mb-2">
                         {% if source.url is defined %}
                             <a href="{{ source.url }}" target="_blank" rel="noopener nofollow">{{ source.titre ?? 'Source' }}</a>
                         {% else %}
@@ -83,14 +115,81 @@
         </div>
         {% endif %}
 
+        <!-- Tags -->
+        {% if article.tags and article.tags|length > 0 %}
+        <div class="mt-4">
+            {% for tag in article.tags %}
+            <span class="badge bg-light text-dark border me-1 mb-1" style="font-size:.8rem;">{{ tag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         <!-- CTA -->
-        <div class="text-center mt-5 p-4" style="background:linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); border-radius:12px; color:#fff;">
-            <h3 style="font-weight:700;">Vous avez trouvé cet article utile ?</h3>
-            <p class="mb-3" style="opacity:.9;">Découvrez nos autres guides et analyses.</p>
-            <a href="{{ path('app_home') }}" class="btn btn-light btn-lg">
-                <i class="bi bi-arrow-left me-1"></i>Voir tous les articles
+        <div class="text-center mt-5 p-4" style="background:linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); border-radius:16px; color:#fff;">
+            <h3 style="font-weight:800; font-size:1.3rem;">Cet article vous a été utile ?</h3>
+            <p class="mb-3" style="opacity:.85; font-size:.95rem;">Découvrez nos autres guides et analyses.</p>
+            <a href="{{ path('app_home') }}" class="btn btn-light px-4">
+                <i class="bi bi-grid me-1"></i>Tous les articles
             </a>
         </div>
     </div>
+
+    <!-- Sidebar : Table des matières -->
+    <div class="col-lg-4 d-none d-lg-block">
+        <div class="toc" id="toc">
+            <div class="toc-title"><i class="bi bi-list-nested me-1"></i>Sommaire</div>
+            <ul class="toc-list" id="tocList"></ul>
+
+            {% if article.seoScore %}
+            <div class="mt-4 p-3" style="background:#f8fafc; border-radius:8px; border:1px solid var(--border);">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <small style="font-weight:700; color:var(--text-light); text-transform:uppercase; font-size:.7rem;">Score SEO</small>
+                    <small style="font-weight:700; color:{{ article.seoScore >= 7 ? 'var(--success)' : (article.seoScore >= 4 ? 'var(--warning)' : '#ef4444') }};">{{ article.seoScore }}/9</small>
+                </div>
+                <div class="progress" style="height:6px;">
+                    <div class="progress-bar bg-{{ article.seoScore >= 7 ? 'success' : (article.seoScore >= 4 ? 'warning' : 'danger') }}" style="width:{{ (article.seoScore / 9 * 100)|round }}%"></div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="mt-3 p-3" style="background:#f8fafc; border-radius:8px; border:1px solid var(--border);">
+                <small style="color:var(--text-light); font-size:.8rem;">
+                    <i class="bi bi-clock me-1"></i>{{ readingTime }} min de lecture<br>
+                    <i class="bi bi-text-paragraph me-1"></i>{{ article.content|striptags|split(' ')|length }} mots
+                </small>
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+// Auto-generate TOC from H2 headings
+document.addEventListener('DOMContentLoaded', () => {
+    const content = document.getElementById('articleContent');
+    const tocList = document.getElementById('tocList');
+    const headings = content.querySelectorAll('h2');
+
+    headings.forEach((h, i) => {
+        const id = 'section-' + i;
+        h.id = id;
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="#${id}">${h.textContent}</a>`;
+        tocList.appendChild(li);
+    });
+
+    // Highlight active TOC item on scroll
+    const tocLinks = tocList.querySelectorAll('a');
+    window.addEventListener('scroll', () => {
+        let current = '';
+        headings.forEach(h => {
+            if (window.scrollY >= h.offsetTop - 100) current = h.id;
+        });
+        tocLinks.forEach(a => {
+            a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -6,23 +6,40 @@
 <link rel="canonical" href="https://{{ app.request.host }}/{{ categorySlug }}">
 {% endblock %}
 
-{% block body %}
-<h1 class="mb-4" style="font-weight:700; color:var(--primary);">{{ categoryName }}</h1>
+{% block hero %}
+<section class="hero" style="padding:2.5rem 0;">
+    <div class="container position-relative" style="z-index:1;">
+        <p class="mb-1" style="font-size:.82rem; opacity:.6; text-transform:uppercase; letter-spacing:.1em; font-weight:600;">Catégorie</p>
+        <h1 style="font-size:2rem;">{{ categoryName }}</h1>
+        <p class="mb-0" style="opacity:.8;">{{ articles|length }} article{{ articles|length > 1 ? 's' : '' }} disponible{{ articles|length > 1 ? 's' : '' }}</p>
+    </div>
+</section>
+{% endblock %}
 
+{% block body %}
 {% if articles is empty %}
-    <p class="text-muted">Aucun article dans cette catégorie pour le moment.</p>
+    <div class="text-center py-5">
+        <i class="bi bi-journal-text display-1 text-muted"></i>
+        <p class="mt-3 text-muted fs-5">Aucun article dans cette catégorie.</p>
+    </div>
 {% else %}
 <div class="row g-4">
     {% for article in articles %}
-    <div class="col-md-6">
+    <div class="col-md-6 fade-up">
         <div class="article-card h-100">
-            <div class="card-body">
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="category-badge {{ article.category == 'evergreen' ? 'badge-evergreen' : 'badge-actualites' }}">
+                        {{ article.category == 'evergreen' ? 'Guide' : 'Actualité' }}
+                    </span>
+                    <span class="reading-time"><i class="bi bi-clock me-1"></i>{{ (article.content|striptags|split(' ')|length / 200)|round }} min</span>
+                </div>
                 <h3 class="card-title">
                     <a href="{{ path('app_article', {slug: article.slug}) }}" class="text-decoration-none text-dark">{{ article.title }}</a>
                 </h3>
-                <p class="card-text">{{ article.excerpt|length > 200 ? article.excerpt[:200] ~ '...' : article.excerpt }}</p>
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <small class="text-muted">{{ article.publishedAt ? article.publishedAt|date('d/m/Y') : '' }}</small>
+                <p class="card-text flex-grow-1">{{ article.excerpt|length > 150 ? article.excerpt[:150] ~ '...' : article.excerpt }}</p>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-3" style="border-top:1px solid var(--border);">
+                    <small class="text-muted">{{ article.publishedAt ? article.publishedAt|date('d/m/Y') : article.createdAt|date('d/m/Y') }}</small>
                     <a href="{{ path('app_article', {slug: article.slug}) }}" class="btn btn-sm btn-outline-primary">Lire <i class="bi bi-arrow-right ms-1"></i></a>
                 </div>
             </div>
