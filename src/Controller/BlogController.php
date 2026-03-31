@@ -10,11 +10,6 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class BlogController extends AbstractController
 {
-    public function __construct(
-        private string $blogDomain,
-    ) {
-    }
-
     #[Route('/', name: 'app_home')]
     public function home(EntityManagerInterface $em): Response
     {
@@ -24,10 +19,7 @@ class BlogController extends AbstractController
             20,
         );
 
-        $response = $this->render('blog/home.html.twig', [
-            'articles' => $articles,
-            'domain' => $this->blogDomain,
-        ]);
+        $response = $this->render('blog/home.html.twig', ['articles' => $articles]);
         $response->setPublic();
         $response->setMaxAge(1800);
 
@@ -51,10 +43,7 @@ class BlogController extends AbstractController
     {
         $articles = $em->getRepository(Article::class)->findAll();
 
-        $response = $this->render('blog/sitemap.xml.twig', [
-            'articles' => $articles,
-            'domain' => $this->blogDomain,
-        ]);
+        $response = $this->render('blog/sitemap.xml.twig', ['articles' => $articles]);
         $response->headers->set('Content-Type', 'application/xml');
         $response->setPublic();
         $response->setMaxAge(86400);
@@ -65,12 +54,11 @@ class BlogController extends AbstractController
     #[Route('/robots.txt', name: 'app_robots')]
     public function robots(): Response
     {
-        $content = "User-agent: *\nAllow: /\nSitemap: https://{$this->blogDomain}/sitemap.xml";
-
-        return new Response($content, 200, [
-            'Content-Type' => 'text/plain',
-            'Cache-Control' => 'public, max-age=86400',
-        ]);
+        return new Response(
+            "User-agent: *\nAllow: /\n",
+            200,
+            ['Content-Type' => 'text/plain', 'Cache-Control' => 'public, max-age=86400'],
+        );
     }
 
     #[Route('/{slug}', name: 'app_article')]
@@ -81,10 +69,7 @@ class BlogController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        $response = $this->render('blog/article.html.twig', [
-            'article' => $article,
-            'domain' => $this->blogDomain,
-        ]);
+        $response = $this->render('blog/article.html.twig', ['article' => $article]);
         $response->setPublic();
         $response->setMaxAge(3600);
 
@@ -102,7 +87,6 @@ class BlogController extends AbstractController
             'articles' => $articles,
             'categoryName' => $name,
             'categorySlug' => $category === 'evergreen' ? 'guides' : 'actualites',
-            'domain' => $this->blogDomain,
         ]);
         $response->setPublic();
         $response->setMaxAge(1800);
