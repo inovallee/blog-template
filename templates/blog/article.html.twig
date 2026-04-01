@@ -62,20 +62,8 @@
                 <ul class="toc-list" id="tocList"></ul>
             </div>
             <div class="info-box mt-3">
-                <div class="mb-1"><i class="bi bi-clock me-1"></i><strong>{{ readingTime }} min</strong> de lecture</div>
-                <div><i class="bi bi-text-paragraph me-1"></i>{{ wordCount }} mots</div>
+                <div><i class="bi bi-clock me-1"></i><strong>{{ readingTime }} min</strong> de lecture</div>
             </div>
-            {% if article.seoScore %}
-            <div class="info-box mt-2">
-                <div class="d-flex justify-content-between mb-1">
-                    <span>Score SEO</span>
-                    <strong style="color:{{ article.seoScore >= 7 ? '#10b981' : (article.seoScore >= 4 ? '#f59e0b' : '#ef4444') }}">{{ article.seoScore }}/9</strong>
-                </div>
-                <div class="progress" style="height:4px;">
-                    <div class="progress-bar" style="width:{{ (article.seoScore / 9 * 100)|round }}%; background:{{ article.seoScore >= 7 ? '#10b981' : (article.seoScore >= 4 ? '#f59e0b' : '#ef4444') }}"></div>
-                </div>
-            </div>
-            {% endif %}
         </div>
     </aside>
 
