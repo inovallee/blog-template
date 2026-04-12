@@ -48,7 +48,7 @@
 
         /* Ticker */
         .ticker-wrap { background: var(--primary); overflow: hidden; white-space: nowrap; }
-        .ticker { display: inline-flex; animation: ticker 45s linear infinite; }
+        .ticker { display: inline-flex; animation: ticker var(--ticker-duration, 45s) linear infinite; }
         .ticker:hover { animation-play-state: paused; }
         .ticker-item { display: inline-flex; align-items: center; padding: .4rem 2rem; font-size: .78rem; color: rgba(255,255,255,.85); font-weight: 500; }
         .ticker-item i { color: var(--accent); margin-right: .4rem; }
@@ -225,6 +225,16 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Ticker speed: ~50px/s regardless of content length
+    document.addEventListener('DOMContentLoaded', function() {
+        const ticker = document.querySelector('.ticker');
+        if (ticker) {
+            const duration = Math.max(20, ticker.scrollWidth / 50);
+            ticker.style.setProperty('--ticker-duration', duration + 's');
+        }
+    });
+    </script>
     {% block javascripts %}{% endblock %}
 </body>
 </html>
