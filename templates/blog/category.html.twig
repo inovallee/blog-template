@@ -1,5 +1,23 @@
 {% extends 'base.html.twig' %}
 
+{% block ticker %}
+{% set actus = articles|filter(a => a.category == 'actualites') %}
+{% if actus|length > 0 %}
+<div class="ticker-wrap">
+    <div class="ticker">
+        {% for i in 0..1 %}
+        {% for a in actus %}
+        <span class="ticker-item">
+            <i class="bi bi-lightning-fill"></i>
+            <a href="{{ path('app_article', {slug: a.slug}) }}">{{ a.title }}</a>
+        </span>
+        {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
 {% block title %}{{ categoryName }} — {{ app.request.host }}{% endblock %}
 {% block meta %}
 <meta name="description" content="{{ categoryName }} : articles et guides experts sur {{ app.request.host }}">

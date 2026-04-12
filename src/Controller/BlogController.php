@@ -69,7 +69,16 @@ class BlogController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        $response = $this->render('blog/article.html.twig', ['article' => $article]);
+        $tickerArticles = $em->getRepository(Article::class)->findBy(
+            ['category' => 'actualites'],
+            ['publishedAt' => 'DESC'],
+            15,
+        );
+
+        $response = $this->render('blog/article.html.twig', [
+            'article' => $article,
+            'tickerArticles' => $tickerArticles,
+        ]);
         $response->setPublic();
         $response->setMaxAge(3600);
 

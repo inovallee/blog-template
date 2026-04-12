@@ -4,6 +4,23 @@
 {% set wordCount = article.content|striptags|split(' ')|length %}
 {% set domain = app.request.host %}
 
+{% block ticker %}
+{% if tickerArticles is defined and tickerArticles|length > 0 %}
+<div class="ticker-wrap">
+    <div class="ticker">
+        {% for i in 0..1 %}
+        {% for a in tickerArticles %}
+        <span class="ticker-item">
+            <i class="bi bi-lightning-fill"></i>
+            <a href="{{ path('app_article', {slug: a.slug}) }}">{{ a.title }}</a>
+        </span>
+        {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
 {% block title %}{{ article.metaTitle ?? article.title }}{% endblock %}
 {% block meta %}
 <meta name="description" content="{{ article.metaDescription ?? article.excerpt }}">
