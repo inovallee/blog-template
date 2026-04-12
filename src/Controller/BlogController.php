@@ -16,7 +16,7 @@ class BlogController extends AbstractController
         $articles = $em->getRepository(Article::class)->findBy(
             [],
             ['publishedAt' => 'DESC'],
-            20,
+            100,
         );
 
         $response = $this->render('blog/home.html.twig', ['articles' => $articles]);
