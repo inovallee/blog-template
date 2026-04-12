@@ -33,6 +33,10 @@
 <meta property="article:published_time" content="{{ article.publishedAt ? article.publishedAt|date('c') : article.createdAt|date('c') }}">
 {% if article.tags %}{% for tag in article.tags %}<meta property="article:tag" content="{{ tag }}">
 {% endfor %}{% endif %}
+{% if article.imageUrl is defined and article.imageUrl %}
+<meta property="og:image" content="{{ article.imageUrl }}">
+<meta name="twitter:image" content="{{ article.imageUrl }}">
+{% endif %}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ article.metaTitle ?? article.title }}">
 <meta name="twitter:description" content="{{ article.metaDescription ?? article.excerpt }}">
@@ -112,6 +116,16 @@
                 {% endif %}
             </div>
         </div>
+
+        {% if article.imageUrl is defined and article.imageUrl %}
+        <figure style="margin:0 0 1.5rem 0;">
+            <img src="{{ article.imageUrl }}" alt="{{ article.imageAlt ?? article.title }}" loading="eager"
+                 style="width:100%; height:auto; max-height:440px; object-fit:cover; border-radius:12px;">
+            {% if article.imageAlt %}
+            <figcaption style="text-align:center; font-size:.75rem; color:var(--text-light); margin-top:.5rem;">{{ article.imageAlt }}</figcaption>
+            {% endif %}
+        </figure>
+        {% endif %}
 
         <!-- Article content -->
         <div class="article-content article_text" id="articleContent">
