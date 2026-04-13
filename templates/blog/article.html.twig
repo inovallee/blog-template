@@ -170,10 +170,6 @@
 
         <h1 style="font-size:2rem; font-weight:800; color:var(--text-dark); line-height:1.25; margin-bottom:1rem;">{{ article.title }}</h1>
 
-        {% if article.excerpt %}
-        <p style="color:var(--text); font-size:1.1rem; line-height:1.6; margin-bottom:1rem;">{{ article.excerpt }}</p>
-        {% endif %}
-
         <div style="font-size:.82rem; color:var(--text-light); margin-bottom:1.5rem;">
             Par {{ domain }}
             <span style="display:block; color:var(--accent); margin-top:.2rem;">Le {{ article.publishedAt ? article.publishedAt|date('d/m/Y') : article.createdAt|date('d/m/Y') }} · {{ readingTime }} min de lecture</span>
