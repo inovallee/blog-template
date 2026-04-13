@@ -12,18 +12,13 @@
         <a href="{{ path('app_home') }}" class="active">À la une</a>
         <span class="sep"></span>
         <a href="{{ path('app_category_actualites') }}">En continu</a>
+        {% if typeSections is defined and typeSections|length > 0 %}
         <span class="sep"></span>
-        {% if citySections is defined %}
-        {% for section in citySections %}
-        <a href="{{ path('app_city', {city: section.city}) }}">{{ section.city }}</a>
-        {% endfor %}
-        <span class="sep"></span>
-        {% endif %}
-        {% if typeSections is defined %}
         {% for section in typeSections %}
         <a href="{{ path('app_type', {eventType: section.type}) }}">{{ section.label }}</a>
         {% endfor %}
         {% endif %}
+        <span class="sep"></span>
         <a href="{{ path('app_category_evergreen') }}">Guides</a>
     </div>
 </nav>
