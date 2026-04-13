@@ -8,23 +8,22 @@
     {% block meta %}{% endblock %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #1a1a1a;
-            --accent: #c0392b;
-            --accent-hover: #a93226;
+            --primary: #0a2463;
+            --accent: #0060aa;
+            --accent-hover: #004d8a;
+            --yellow: #f5c518;
             --text: #333;
             --text-dark: #1a1a1a;
             --text-light: #777;
             --bg: #fff;
             --bg-alt: #f5f5f5;
             --border: #e0e0e0;
-            --serif: 'Merriweather', Georgia, serif;
-            --sans: 'Inter', -apple-system, sans-serif;
         }
         html { scroll-behavior: smooth; }
-        body { font-family: var(--sans); color: var(--text); background: var(--bg); margin: 0; -webkit-font-smoothing: antialiased; font-size: 15px; }
+        body { font-family: 'Inter', -apple-system, sans-serif; color: var(--text); background: var(--bg); margin: 0; -webkit-font-smoothing: antialiased; font-size: 15px; }
         a { color: var(--accent); text-decoration: none; transition: color .2s; }
         a:hover { color: var(--accent-hover); }
 
@@ -32,21 +31,29 @@
         .reading-progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0%; z-index: 9999; transition: width .1s linear; }
 
         /* Header */
-        .site-header { background: #fff; z-index: 100; border-bottom: 2px solid var(--primary); }
-        .header-inner { display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; padding: .8rem 1.5rem; }
-        .site-logo { font-family: var(--serif); font-weight: 900; font-size: 1.5rem; color: var(--primary); letter-spacing: -.02em; }
-        .site-logo:hover { color: var(--primary); }
-        .site-nav { display: flex; gap: 0; align-items: center; }
-        .site-nav a { color: var(--text); font-size: .85rem; font-weight: 600; padding: .5rem 1rem; border-left: 1px solid var(--border); transition: all .2s; text-transform: uppercase; letter-spacing: .03em; }
-        .site-nav a:first-child { border-left: none; }
-        .site-nav a:hover { color: var(--accent); }
+        .site-header { background: #fff; z-index: 100; border-bottom: 1px solid var(--border); }
+        .header-inner { display: flex; align-items: center; justify-content: center; max-width: 1200px; margin: 0 auto; padding: .8rem 1.5rem; position: relative; }
+        .site-logo { font-weight: 800; font-size: 1.8rem; color: #fff; letter-spacing: -.02em; background: var(--primary); padding: .3rem 1.2rem; display: inline-block; }
+        .site-logo:hover { color: #fff; }
+        .header-right { position: absolute; right: 1.5rem; display: flex; align-items: center; gap: 1rem; }
+        .header-right a { color: var(--text); font-size: .82rem; font-weight: 600; }
+        .header-right a:hover { color: var(--accent); }
+
+        /* Top nav bar */
+        .topnav { background: #fff; border-bottom: 1px solid var(--border); overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .topnav::-webkit-scrollbar { display: none; }
+        .topnav-inner { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; display: flex; gap: 0; align-items: stretch; }
+        .topnav a { color: var(--text); font-size: .82rem; font-weight: 600; padding: .6rem 1rem; display: inline-flex; align-items: center; border-bottom: 3px solid transparent; transition: all .15s; }
+        .topnav a:hover { color: var(--accent); border-bottom-color: var(--yellow); }
+        .topnav a.active { color: var(--accent); border-bottom-color: var(--yellow); }
+        .topnav .sep { width: 1px; background: var(--border); margin: .4rem 0; }
 
         /* Ticker */
-        .ticker-wrap { background: var(--accent); overflow: hidden; white-space: nowrap; }
+        .ticker-wrap { background: var(--primary); overflow: hidden; white-space: nowrap; }
         .ticker { display: inline-flex; animation: ticker var(--ticker-duration, 45s) linear infinite; }
         .ticker:hover { animation-play-state: paused; }
         .ticker-item { display: inline-flex; align-items: center; padding: .35rem 2rem; font-size: .78rem; color: rgba(255,255,255,.9); font-weight: 500; }
-        .ticker-item i { color: #fff; margin-right: .4rem; }
+        .ticker-item i { color: var(--yellow); margin-right: .4rem; }
         .ticker-item a { color: #fff; }
         .ticker-item a:hover { text-decoration: underline; color: #fff; }
         @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
@@ -66,7 +73,7 @@
 
         /* Article header */
         .article-header { margin-bottom: 1.5rem; }
-        .article-header h1 { font-family: var(--serif); font-size: 2.2rem; font-weight: 900; color: var(--text-dark); line-height: 1.25; letter-spacing: -.02em; margin-bottom: 1rem; }
+        .article-header h1 { font-size: 2rem; font-weight: 800; color: var(--text-dark); line-height: 1.25; letter-spacing: -.03em; margin-bottom: 1rem; }
         .article-meta { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; color: var(--text-light); font-size: .82rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
         .article-meta i { font-size: .75rem; }
         .category-pill { background: var(--accent); color: #fff; font-size: .65rem; font-weight: 700; padding: .2rem .6rem; border-radius: 2px; text-transform: uppercase; letter-spacing: .05em; display: inline-block; }
@@ -76,8 +83,8 @@
 
         /* Article content */
         .article-content { font-size: 1.05rem; line-height: 1.85; color: var(--text); }
-        .article-content h2 { font-family: var(--serif); font-size: 1.4rem; font-weight: 700; color: var(--text-dark); margin: 2.5rem 0 1rem; padding-top: .5rem; }
-        .article-content h3 { font-size: 1.1rem; font-weight: 600; color: var(--text-dark); margin: 1.8rem 0 .7rem; }
+        .article-content h2 { font-size: 1.45rem; font-weight: 700; color: var(--text-dark); margin: 2.5rem 0 1rem; padding-top: .5rem; }
+        .article-content h3 { font-size: 1.15rem; font-weight: 600; color: var(--text-dark); margin: 1.8rem 0 .7rem; }
         .article-content p { margin-bottom: 1.3rem; }
         .article-content ul, .article-content ol { margin-bottom: 1.3rem; padding-left: 1.5rem; }
         .article-content li { margin-bottom: .4rem; line-height: 1.75; }
@@ -87,7 +94,7 @@
         .article-content table th { background: var(--primary); color: #fff; padding: .6rem .8rem; text-align: left; font-size: .82rem; font-weight: 600; }
         .article-content table td { padding: .6rem .8rem; border-bottom: 1px solid var(--border); }
         .article-content table tr:hover td { background: var(--bg-alt); }
-        .article-content a { color: var(--accent); text-decoration: underline; text-decoration-color: rgba(192,57,43,.3); text-underline-offset: 2px; }
+        .article-content a { color: var(--accent); text-decoration: underline; text-decoration-color: rgba(0,96,170,.3); text-underline-offset: 2px; }
         .article-content a:hover { text-decoration-color: var(--accent); }
 
         /* TOC sidebar */
@@ -98,7 +105,7 @@
         .toc-list li { margin-bottom: .2rem; }
         .toc-list a { font-size: .82rem; color: var(--text-light); display: block; padding: .35rem .8rem; border-left: 2px solid transparent; transition: all .2s; line-height: 1.4; }
         .toc-list a:hover { color: var(--text); background: rgba(0,0,0,.03); }
-        .toc-list a.highlight { color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+        .toc-list a.highlight { color: var(--accent); border-left-color: var(--yellow); font-weight: 600; }
 
         /* Sources box */
         .sources-box { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 4px; padding: 1.5rem; margin-top: 2.5rem; }
@@ -112,29 +119,29 @@
 
         /* CTA */
         .article-cta { background: var(--primary); border-radius: 4px; padding: 2.5rem; text-align: center; color: #fff; margin-top: 3rem; }
-        .article-cta h3 { font-family: var(--serif); font-weight: 700; font-size: 1.2rem; margin-bottom: .5rem; }
+        .article-cta h3 { font-weight: 800; font-size: 1.2rem; margin-bottom: .5rem; }
         .article-cta p { opacity: .7; font-size: .95rem; margin-bottom: 1rem; }
-        .article-cta .btn { background: var(--accent); border: none; color: #fff; padding: .5rem 1.5rem; border-radius: 4px; font-weight: 600; font-size: .9rem; }
-        .article-cta .btn:hover { background: var(--accent-hover); }
+        .article-cta .btn { background: var(--yellow); border: none; color: var(--primary); padding: .5rem 1.5rem; border-radius: 4px; font-weight: 700; font-size: .9rem; }
+        .article-cta .btn:hover { background: #e0b200; }
 
-        /* Cards — newspaper style */
+        /* Cards */
         .article-card { background: #fff; border: 1px solid var(--border); overflow: hidden; transition: box-shadow .2s; }
         .article-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
         .article-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
         .article-card .card-body { padding: 1rem; }
-        .article-card .card-title { font-family: var(--serif); font-weight: 700; font-size: .95rem; color: var(--text-dark); line-height: 1.35; }
+        .article-card .card-title { font-weight: 700; font-size: .95rem; color: var(--text-dark); line-height: 1.35; }
         .article-card .card-title a { color: var(--text-dark); }
         .article-card .card-title a:hover { color: var(--accent); }
         .article-card .card-text { color: var(--text-light); font-size: .82rem; line-height: 1.5; }
 
-        /* Section headers — newspaper style */
+        /* Section headers */
         .section-header { border-bottom: 2px solid var(--primary); padding-bottom: .5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: baseline; }
-        .section-header h2 { font-family: var(--serif); font-weight: 900; font-size: 1.15rem; margin: 0; }
+        .section-header h2 { font-weight: 800; font-size: 1.15rem; margin: 0; }
         .section-header a { font-size: .82rem; font-weight: 600; }
 
         /* Sidebar "En continu" */
         .sidebar-continu { border-left: 3px solid var(--accent); }
-        .sidebar-continu h4 { font-family: var(--serif); font-weight: 900; font-size: 1rem; margin-bottom: 1rem; padding-left: 1rem; }
+        .sidebar-continu h4 { font-weight: 800; font-size: 1rem; margin-bottom: 1rem; padding-left: 1rem; }
         .sidebar-item { padding: .6rem 1rem; border-bottom: 1px solid var(--border); }
         .sidebar-item:last-child { border-bottom: none; }
         .sidebar-item a { color: var(--text-dark); font-size: .85rem; font-weight: 600; line-height: 1.4; display: block; }
@@ -157,6 +164,8 @@
 
         @media (max-width: 768px) {
             .article-header h1 { font-size: 1.6rem; }
+            .site-logo { font-size: 1.3rem; }
+            .header-right { display: none; }
         }
     </style>
     {% block stylesheets %}{% endblock %}
@@ -168,12 +177,11 @@
     <header class="site-header">
         <div class="header-inner">
             <a class="site-logo" href="{{ path('app_home') }}">{{ app.request.host }}</a>
-            <nav class="site-nav d-none d-md-flex">
-                <a href="{{ path('app_home') }}">Accueil</a>
+            <div class="header-right d-none d-md-flex">
                 <a href="{{ path('app_category_actualites') }}">Actualités</a>
                 <a href="{{ path('app_category_evergreen') }}">Guides</a>
-            </nav>
-            <button class="btn d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNav">
+            </div>
+            <button class="btn d-md-none border-0 position-absolute" style="right:1rem;" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNav">
                 <i class="bi bi-list fs-4"></i>
             </button>
         </div>
@@ -186,6 +194,7 @@
         </div>
     </header>
 
+    {% block topnav %}{% endblock %}
     {% block ticker %}{% endblock %}
 
     {% block body_wrapper %}
@@ -199,7 +208,7 @@
         <div class="footer-inner">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
-                    <strong style="color:#fff; font-family:var(--serif);">{{ app.request.host }}</strong>
+                    <strong style="color:#fff;">{{ app.request.host }}</strong>
                     <span style="font-size:.82rem; margin-left:1rem;">Guides et actualités</span>
                 </div>
                 <div style="font-size:.82rem;">
