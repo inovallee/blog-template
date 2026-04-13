@@ -130,11 +130,11 @@
         </div>
 
         {% if article.imageUrl is defined and article.imageUrl %}
-        <figure style="margin:0 0 1.5rem 0;">
+        <figure style="margin:0 0 2rem 0;">
             <img src="{{ article.imageUrl }}" alt="{{ article.imageAlt ?? article.title }}" loading="eager"
-                 style="width:100%; height:auto; max-height:440px; object-fit:cover; border-radius:12px;">
+                 class="article-hero-img">
             {% if article.imageAlt %}
-            <figcaption style="text-align:center; font-size:.75rem; color:var(--text-light); margin-top:.5rem;">{{ article.imageAlt }}</figcaption>
+            <figcaption style="text-align:center; font-size:.72rem; color:var(--text-light); margin-top:.4rem; font-style:italic;">{{ article.imageAlt }}</figcaption>
             {% endif %}
         </figure>
         {% endif %}

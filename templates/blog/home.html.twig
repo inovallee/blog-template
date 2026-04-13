@@ -25,56 +25,95 @@
 {% endblock %}
 
 {% block body %}
-{# === HERO: Article à la une === #}
 {% if articles|length > 0 %}
 {% set featured = articles|first %}
-<div class="mb-4">
-    <div class="row g-0 rounded-3 overflow-hidden" style="background:var(--bg-alt); border:1px solid var(--border);">
-        {% if featured.imageUrl %}
-        <div class="col-lg-7">
-            <a href="{{ path('app_article', {slug: featured.slug}) }}">
-                <img src="{{ featured.imageUrl }}" alt="{{ featured.imageAlt ?? featured.title }}" loading="eager"
-                     style="width:100%; height:350px; object-fit:cover;">
-            </a>
-        </div>
-        <div class="col-lg-5 p-4 d-flex flex-column justify-content-center">
-        {% else %}
-        <div class="col-12 p-4">
+
+{# HERO — Le Parisien style: big image + title #}
+<div class="row g-0 mb-4" style="border-bottom:2px solid var(--primary); padding-bottom:1.5rem;">
+    {% if featured.imageUrl %}
+    <div class="col-lg-7">
+        <a href="{{ path('app_article', {slug: featured.slug}) }}">
+            <img src="{{ featured.imageUrl }}" alt="{{ featured.imageAlt ?? featured.title }}" loading="eager"
+                 style="width:100%; height:380px; object-fit:cover;">
+        </a>
+    </div>
+    <div class="col-lg-5 ps-lg-4 d-flex flex-column justify-content-center pt-3 pt-lg-0">
+    {% else %}
+    <div class="col-12">
+    {% endif %}
+        <span class="category-pill mb-2">{{ featured.category == 'evergreen' ? 'Guide' : 'Actualité' }}</span>
+        <h1 style="font-family:var(--serif); font-size:1.7rem; font-weight:900; line-height:1.25; margin-bottom:.8rem;">
+            <a href="{{ path('app_article', {slug: featured.slug}) }}" class="text-decoration-none" style="color:var(--text-dark);">{{ featured.title }}</a>
+        </h1>
+        {% if featured.excerpt %}
+        <p style="color:var(--text); font-size:.9rem; line-height:1.6;">{{ featured.excerpt|length > 200 ? featured.excerpt[:200] ~ '...' : featured.excerpt }}</p>
         {% endif %}
-            <span class="category-pill mb-2">{{ featured.category == 'evergreen' ? 'Guide' : 'Actualité' }}</span>
-            <h1 style="font-size:1.6rem; font-weight:800; line-height:1.3; margin-bottom:.8rem;">
-                <a href="{{ path('app_article', {slug: featured.slug}) }}" class="text-decoration-none" style="color:var(--text-dark);">{{ featured.title }}</a>
-            </h1>
-            {% if featured.excerpt %}
-            <p style="color:var(--text); font-size:.9rem; line-height:1.6;">{{ featured.excerpt|length > 200 ? featured.excerpt[:200] ~ '...' : featured.excerpt }}</p>
-            {% endif %}
-            <div style="font-size:.78rem; color:var(--text);">
-                <i class="bi bi-calendar3 me-1"></i>{{ featured.publishedAt ? featured.publishedAt|date('d/m/Y') : '' }}
-                <span class="ms-2"><i class="bi bi-clock me-1"></i>{{ (featured.content|striptags|split(' ')|length / 250)|round(0, 'ceil') }} min</span>
-            </div>
+        <div style="font-size:.78rem; color:var(--text-light);">
+            <i class="bi bi-calendar3 me-1"></i>{{ featured.publishedAt ? featured.publishedAt|date('d/m/Y') : '' }}
+            <span class="ms-2"><i class="bi bi-clock me-1"></i>{{ (featured.content|striptags|split(' ')|length / 250)|round(0, 'ceil') }} min</span>
         </div>
     </div>
 </div>
-{% endif %}
 
-{# === SECTION PAR VILLE === #}
-{% if citySections|length > 0 %}
+{# MAIN GRID: Articles + Sidebar "En continu" #}
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        {# Articles grid with images #}
+        <div class="row g-3">
+            {% for article in articles|slice(1, 6) %}
+            <div class="col-md-6">
+                <div class="article-card h-100">
+                    {% if article.imageUrl %}
+                    <a href="{{ path('app_article', {slug: article.slug}) }}">
+                        <img src="{{ article.imageUrl }}" alt="{{ article.imageAlt ?? article.title }}" loading="lazy">
+                    </a>
+                    {% endif %}
+                    <div class="card-body">
+                        <span class="category-pill mb-1" style="font-size:.6rem;">{{ article.category == 'evergreen' ? 'Guide' : 'Actualité' }}</span>
+                        <h3 class="card-title"><a href="{{ path('app_article', {slug: article.slug}) }}">{{ article.title }}</a></h3>
+                        <div style="font-size:.75rem; color:var(--text-light); margin-top:.5rem;">
+                            {{ article.publishedAt ? article.publishedAt|date('d/m/Y') : '' }}
+                            · {{ (article.content|striptags|split(' ')|length / 250)|round(0, 'ceil') }} min
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Sidebar "En continu" #}
+    <div class="col-lg-4">
+        <div class="sidebar-continu">
+            <h4>En continu</h4>
+            {% for article in articles|slice(1, 12) %}
+            <div class="sidebar-item">
+                <a href="{{ path('app_article', {slug: article.slug}) }}">{{ article.title }}</a>
+                <div class="meta">{{ article.publishedAt ? article.publishedAt|date('d/m/Y') : '' }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{# SECTIONS PAR VILLE #}
+{% if citySections is defined and citySections|length > 0 %}
 <div class="mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 style="font-size:1.2rem; font-weight:700; margin:0;"><i class="bi bi-geo-alt-fill me-1" style="color:var(--accent);"></i>Par ville</h2>
+    <div class="section-header">
+        <h2><i class="bi bi-geo-alt-fill me-1"></i> Par ville</h2>
     </div>
     <div class="row g-3">
         {% for section in citySections %}
         <div class="col-md-6 col-lg-4">
-            <div style="border:1px solid var(--border); border-radius:12px; overflow:hidden;">
-                <div style="background:var(--primary); color:#fff; padding:.6rem 1rem; font-weight:600; font-size:.85rem;">
+            <div style="border:1px solid var(--border); overflow:hidden;">
+                <div style="background:var(--primary); color:#fff; padding:.5rem 1rem; font-weight:600; font-size:.85rem;">
                     <a href="{{ path('app_city', {city: section.city}) }}" class="text-white text-decoration-none">
-                        {{ section.city }} <span class="badge bg-light text-dark ms-1">{{ section.count }}</span>
+                        {{ section.city }} <span style="opacity:.6; font-size:.75rem;">({{ section.count }})</span>
                     </a>
                 </div>
-                <div style="padding:.8rem 1rem;">
+                <div style="padding:.6rem 1rem;">
                     {% for art in section.articles[:3] %}
-                    <div style="padding:.4rem 0; {{ not loop.last ? 'border-bottom:1px solid var(--border);' : '' }}">
+                    <div style="padding:.35rem 0; {{ not loop.last ? 'border-bottom:1px solid var(--border);' : '' }}">
                         <a href="/{{ art.slug }}" class="text-decoration-none" style="color:var(--text-dark); font-size:.82rem; font-weight:500; line-height:1.3; display:block;">
                             {{ art.title|length > 80 ? art.title[:80] ~ '...' : art.title }}
                         </a>
@@ -88,24 +127,24 @@
 </div>
 {% endif %}
 
-{# === SECTION PAR TYPE === #}
-{% if typeSections|length > 0 %}
+{# SECTIONS PAR TYPE #}
+{% if typeSections is defined and typeSections|length > 0 %}
 <div class="mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 style="font-size:1.2rem; font-weight:700; margin:0;"><i class="bi bi-tag-fill me-1" style="color:var(--accent);"></i>Par catégorie</h2>
+    <div class="section-header">
+        <h2><i class="bi bi-tag-fill me-1"></i> Par catégorie</h2>
     </div>
     <div class="row g-3">
         {% for section in typeSections %}
         <div class="col-md-6 col-lg-4">
-            <div style="border:1px solid var(--border); border-radius:12px; overflow:hidden;">
-                <div style="background:var(--accent); color:#fff; padding:.6rem 1rem; font-weight:600; font-size:.85rem;">
+            <div style="border:1px solid var(--border); overflow:hidden;">
+                <div style="background:var(--accent); color:#fff; padding:.5rem 1rem; font-weight:600; font-size:.85rem;">
                     <a href="{{ path('app_type', {eventType: section.type}) }}" class="text-white text-decoration-none">
-                        {{ section.label }} <span class="badge bg-light text-dark ms-1">{{ section.count }}</span>
+                        {{ section.label }} <span style="opacity:.7; font-size:.75rem;">({{ section.count }})</span>
                     </a>
                 </div>
-                <div style="padding:.8rem 1rem;">
+                <div style="padding:.6rem 1rem;">
                     {% for art in section.articles[:3] %}
-                    <div style="padding:.4rem 0; {{ not loop.last ? 'border-bottom:1px solid var(--border);' : '' }}">
+                    <div style="padding:.35rem 0; {{ not loop.last ? 'border-bottom:1px solid var(--border);' : '' }}">
                         <a href="/{{ art.slug }}" class="text-decoration-none" style="color:var(--text-dark); font-size:.82rem; font-weight:500; line-height:1.3; display:block;">
                             {{ art.title|length > 80 ? art.title[:80] ~ '...' : art.title }}
                         </a>
@@ -119,34 +158,30 @@
 </div>
 {% endif %}
 
-{# === TOUS LES ARTICLES (grille paginée) === #}
+{# TOUS LES ARTICLES — grille paginée #}
+{% if articles|length > 7 %}
 <div class="mb-4">
-    <h2 style="font-size:1.2rem; font-weight:700; margin-bottom:1rem;"><i class="bi bi-newspaper me-1" style="color:var(--accent);"></i>Tous les articles <span class="text-muted" style="font-weight:400; font-size:.85rem;">({{ total }})</span></h2>
-    <div class="row g-4">
+    <div class="section-header">
+        <h2>Tous les articles <span style="font-weight:400; font-size:.82rem; color:var(--text-light);">({{ total }})</span></h2>
+    </div>
+    <div class="row g-3">
         {% for article in articles %}
         {% if not loop.first or page > 1 %}
         <div class="col-md-6 col-lg-4">
             <div class="article-card h-100">
                 {% if article.imageUrl %}
                 <a href="{{ path('app_article', {slug: article.slug}) }}">
-                    <img src="{{ article.imageUrl }}" alt="{{ article.imageAlt ?? article.title }}" loading="lazy"
-                         style="width:100%; height:180px; object-fit:cover;">
+                    <img src="{{ article.imageUrl }}" alt="{{ article.imageAlt ?? article.title }}" loading="lazy">
                 </a>
                 {% endif %}
-                <div class="card-body d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="category-pill">{{ article.category == 'evergreen' ? 'Guide' : 'Actualité' }}</span>
-                        <span class="reading-time"><i class="bi bi-clock me-1"></i>{{ (article.content|striptags|split(' ')|length / 250)|round(0, 'ceil') }} min</span>
-                    </div>
-                    <h3 class="card-title flex-grow-1">
-                        <a href="{{ path('app_article', {slug: article.slug}) }}" class="text-decoration-none" style="color:var(--text-dark);">{{ article.title }}</a>
-                    </h3>
+                <div class="card-body">
+                    <span class="category-pill mb-1" style="font-size:.6rem;">{{ article.category == 'evergreen' ? 'Guide' : 'Actualité' }}</span>
+                    <h3 class="card-title"><a href="{{ path('app_article', {slug: article.slug}) }}">{{ article.title }}</a></h3>
                     {% if article.excerpt %}
-                    <p class="card-text">{{ article.excerpt|length > 120 ? article.excerpt[:120] ~ '...' : article.excerpt }}</p>
+                    <p class="card-text" style="margin-top:.3rem;">{{ article.excerpt|length > 100 ? article.excerpt[:100] ~ '...' : article.excerpt }}</p>
                     {% endif %}
-                    <div class="mt-auto d-flex justify-content-between align-items-center">
-                        <span class="article-date"><i class="bi bi-calendar3 me-1"></i>{{ article.publishedAt ? article.publishedAt|date('d/m/Y') : '' }}</span>
-                        <a href="{{ path('app_article', {slug: article.slug}) }}" class="read-more">Lire <i class="bi bi-arrow-right"></i></a>
+                    <div style="font-size:.75rem; color:var(--text-light); margin-top:.5rem;">
+                        {{ article.publishedAt ? article.publishedAt|date('d/m/Y') : '' }}
                     </div>
                 </div>
             </div>
@@ -155,8 +190,9 @@
         {% endfor %}
     </div>
 </div>
+{% endif %}
 
-{# === PAGINATION === #}
+{# PAGINATION #}
 {% if pages > 1 %}
 <nav class="d-flex justify-content-center mt-4 mb-4">
     <ul class="pagination">
@@ -173,5 +209,7 @@
         </li>
     </ul>
 </nav>
+{% endif %}
+
 {% endif %}
 {% endblock %}

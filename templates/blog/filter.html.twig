@@ -6,53 +6,49 @@
 {% endblock %}
 
 {% block body %}
-<div class="mb-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb" style="font-size:.82rem;">
-            <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
-            <li class="breadcrumb-item active">{{ filterValue }}</li>
-        </ol>
-    </nav>
+<div class="breadcrumb mt-2">
+    <a href="{{ path('app_home') }}">Accueil</a>
+    <span class="breadcrumb-separator">/</span>
+    <span style="color:var(--text-light);">{{ filterValue }}</span>
+</div>
 
-    <div class="d-flex align-items-center gap-2 mb-4">
+<div class="section-header">
+    <h2>
         {% if filterType == 'ville' %}
-        <i class="bi bi-geo-alt-fill" style="font-size:1.5rem; color:var(--accent);"></i>
+        <i class="bi bi-geo-alt-fill me-1"></i>
         {% else %}
-        <i class="bi bi-tag-fill" style="font-size:1.5rem; color:var(--accent);"></i>
+        <i class="bi bi-tag-fill me-1"></i>
         {% endif %}
-        <h1 style="font-size:1.5rem; font-weight:800; margin:0;">{{ filterValue }}</h1>
-        <span class="badge bg-secondary">{{ articles|length }} article{{ articles|length > 1 ? 's' : '' }}</span>
-    </div>
+        {{ filterValue }}
+    </h2>
+    <span style="color:var(--text-light); font-size:.85rem;">{{ articles|length }} article{{ articles|length > 1 ? 's' : '' }}</span>
+</div>
 
-    {% if articles is empty %}
-    <p class="text-muted">Aucun article pour cette catégorie.</p>
-    {% else %}
-    <div class="row g-4">
-        {% for art in articles %}
-        <div class="col-md-6">
-            <div class="article-card h-100">
-                {% if art.image_url is defined and art.image_url %}
-                <a href="/{{ art.slug }}">
-                    <img src="{{ art.image_url }}" alt="{{ art.image_alt ?? art.title }}" loading="lazy"
-                         style="width:100%; height:180px; object-fit:cover;">
-                </a>
+{% if articles is empty %}
+<p style="color:var(--text-light);">Aucun article pour cette catégorie.</p>
+{% else %}
+<div class="row g-3">
+    {% for art in articles %}
+    <div class="col-md-6 col-lg-4">
+        <div class="article-card h-100">
+            {% if art.image_url is defined and art.image_url %}
+            <a href="/{{ art.slug }}">
+                <img src="{{ art.image_url }}" alt="{{ art.image_alt ?? art.title }}" loading="lazy">
+            </a>
+            {% endif %}
+            <div class="card-body">
+                <span class="category-pill mb-1" style="font-size:.6rem;">{{ art.category == 'evergreen' ? 'Guide' : 'Actualité' }}</span>
+                <h3 class="card-title"><a href="/{{ art.slug }}">{{ art.title }}</a></h3>
+                {% if art.excerpt is defined and art.excerpt %}
+                <p class="card-text" style="margin-top:.3rem;">{{ art.excerpt|length > 120 ? art.excerpt[:120] ~ '...' : art.excerpt }}</p>
                 {% endif %}
-                <div class="card-body d-flex flex-column">
-                    <span class="category-pill mb-2">{{ art.category == 'evergreen' ? 'Guide' : 'Actualité' }}</span>
-                    <h3 class="card-title flex-grow-1">
-                        <a href="/{{ art.slug }}" class="text-decoration-none" style="color:var(--text-dark);">{{ art.title }}</a>
-                    </h3>
-                    {% if art.excerpt is defined and art.excerpt %}
-                    <p class="card-text">{{ art.excerpt|length > 150 ? art.excerpt[:150] ~ '...' : art.excerpt }}</p>
-                    {% endif %}
-                    <div class="mt-auto">
-                        <span class="article-date"><i class="bi bi-calendar3 me-1"></i>{{ art.published_at ? art.published_at|date('d/m/Y') : '' }}</span>
-                    </div>
+                <div style="font-size:.75rem; color:var(--text-light); margin-top:.5rem;">
+                    {{ art.published_at ? art.published_at|date('d/m/Y') : '' }}
                 </div>
             </div>
         </div>
-        {% endfor %}
     </div>
-    {% endif %}
+    {% endfor %}
 </div>
+{% endif %}
 {% endblock %}
