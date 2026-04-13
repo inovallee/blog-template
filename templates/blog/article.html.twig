@@ -3,6 +3,7 @@
 {% set readingTime = (article.content|striptags|split(' ')|length / 250)|round(0, 'ceil') %}
 {% set wordCount = article.content|striptags|split(' ')|length %}
 {% set domain = app.request.host %}
+{% set isGuide = article.category == 'evergreen' %}
 
 {% block ticker %}
 {% if tickerArticles is defined and tickerArticles|length > 0 %}
@@ -34,8 +35,8 @@
 {% if article.tags %}{% for tag in article.tags %}<meta property="article:tag" content="{{ tag }}">
 {% endfor %}{% endif %}
 {% if article.imageUrl is defined and article.imageUrl %}
-<meta property="og:image" content="{{ article.imageUrl }}">
-<meta name="twitter:image" content="{{ article.imageUrl }}">
+<meta property="og:image" content="https://{{ domain }}{{ article.imageUrl }}">
+<meta name="twitter:image" content="https://{{ domain }}{{ article.imageUrl }}">
 {% endif %}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ article.metaTitle ?? article.title }}">
@@ -49,10 +50,11 @@
     "datePublished": "{{ article.publishedAt ? article.publishedAt|date('c') : article.createdAt|date('c') }}",
     "dateModified": "{{ article.deployedAt ? article.deployedAt|date('c') : article.createdAt|date('c') }}",
     "wordCount": {{ wordCount }},
+    {% if article.imageUrl %}"image": "https://{{ domain }}{{ article.imageUrl }}",{% endif %}
     "author": {"@type": "Organization", "name": "{{ domain }}", "url": "https://{{ domain }}"},
     "publisher": {"@type": "Organization", "name": "{{ domain }}", "url": "https://{{ domain }}"},
     "mainEntityOfPage": {"@type": "WebPage", "@id": "https://{{ domain }}/{{ article.slug }}"},
-    "articleSection": "{{ article.category == 'evergreen' ? 'Guides' : 'Actualités' }}"
+    "articleSection": "{{ isGuide ? 'Guides' : 'Actualités' }}"
     {% if article.keyword %}, "keywords": "{{ article.keyword|e('js') }}"{% endif %}
 }
 </script>
@@ -62,7 +64,7 @@
     "@type": "BreadcrumbList",
     "itemListElement": [
         {"@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://{{ domain }}/"},
-        {"@type": "ListItem", "position": 2, "name": "{{ article.category == 'evergreen' ? 'Guides' : 'Actualités' }}", "item": "https://{{ domain }}/{{ article.category == 'evergreen' ? 'guides' : 'actualites' }}"},
+        {"@type": "ListItem", "position": 2, "name": "{{ isGuide ? 'Guides' : 'Actualités' }}", "item": "https://{{ domain }}/{{ isGuide ? 'guides' : 'actualites' }}"},
         {"@type": "ListItem", "position": 3, "name": "{{ article.title|e('js') }}"}
     ]
 }
@@ -74,8 +76,9 @@
 {% endblock %}
 
 {% block body_wrapper %}
+{% if isGuide %}
+{# ===== GUIDE: sidebar TOC + full layout ===== #}
 <div class="article-wrapper">
-    <!-- TOC Sidebar (left, like Ringover) -->
     <aside class="article-sidebar" style="order:-1;">
         <div class="toc-sticky">
             <div class="toc-box" id="articleSummary">
@@ -88,22 +91,17 @@
         </div>
     </aside>
 
-    <!-- Article main content -->
     <article class="article-main" id="article">
-        <!-- Breadcrumb -->
         <div class="breadcrumb">
             <a href="{{ path('app_home') }}">Accueil</a>
             <span class="breadcrumb-separator">/</span>
-            <a href="{{ path(article.category == 'evergreen' ? 'app_category_evergreen' : 'app_category_actualites') }}">
-                {{ article.category == 'evergreen' ? 'Guides' : 'Actualités' }}
-            </a>
+            <a href="{{ path('app_category_evergreen') }}">Guides</a>
             <span class="breadcrumb-separator">/</span>
             <span style="color:var(--text-light);">{{ article.title|length > 50 ? article.title[:50] ~ '...' : article.title }}</span>
         </div>
 
-        <!-- Article header -->
         <div class="article-header">
-            <span class="category-pill">{{ article.category == 'evergreen' ? 'Guide' : 'Actualité' }}</span>
+            <span class="category-pill" style="background:#27ae60;">Guide</span>
             <h1>{{ article.title }}</h1>
             {% if article.excerpt %}
             <p style="color:var(--text-light); font-size:1.05rem; line-height:1.6; margin-bottom:1rem;">{{ article.excerpt }}</p>
@@ -112,66 +110,38 @@
                 <span><i class="bi bi-calendar3 me-1"></i>{{ article.publishedAt ? article.publishedAt|date('d/m/Y') : article.createdAt|date('d/m/Y') }}</span>
                 <span><i class="bi bi-clock me-1"></i>{{ readingTime }} min de lecture</span>
                 {% if article.keyword %}
-                <span><i class="bi bi-key me-1"></i>{{ article.keyword }}</span>
+                <span><i class="bi bi-tag me-1"></i>{{ article.keyword }}</span>
                 {% endif %}
             </div>
-            {% if event is defined and event %}
-            <div class="mt-2">
-                {% if event.city %}
-                <a href="{{ path('app_city', {city: event.city}) }}" class="badge text-decoration-none" style="background:var(--primary); color:#fff; font-size:.75rem;">
-                    <i class="bi bi-geo-alt-fill me-1"></i>{{ event.city }}
-                </a>
-                {% endif %}
-                <a href="{{ path('app_type', {eventType: event.eventType}) }}" class="badge text-decoration-none" style="background:var(--accent); color:#fff; font-size:.75rem;">
-                    <i class="bi bi-tag-fill me-1"></i>{{ event.eventType }}
-                </a>
-            </div>
-            {% endif %}
         </div>
 
         {% if article.imageUrl is defined and article.imageUrl %}
         <figure style="margin:0 0 2rem 0;">
-            <img src="{{ article.imageUrl }}" alt="{{ article.imageAlt ?? article.title }}" loading="eager"
-                 class="article-hero-img">
-            {% if article.imageAlt %}
-            <figcaption style="text-align:center; font-size:.72rem; color:var(--text-light); margin-top:.4rem; font-style:italic;">{{ article.imageAlt }}</figcaption>
-            {% endif %}
+            <img src="{{ article.imageUrl }}" alt="{{ article.imageAlt ?? article.title }}" loading="eager" class="article-hero-img">
         </figure>
         {% endif %}
 
-        <!-- Article content -->
         <div class="article-content article_text" id="articleContent">
             {{ article.content|raw }}
         </div>
 
-        <!-- Sources -->
         {% if article.sources and article.sources|length > 0 %}
         <div class="sources-box">
             <h3><i class="bi bi-journal-bookmark me-1"></i>Sources et références</h3>
             <ol>
                 {% for source in article.sources %}
-                <li>
-                    {% if source.url is defined %}
-                        <a href="{{ source.url }}" target="_blank" rel="noopener nofollow">{{ source.titre ?? 'Source' }}</a>
-                    {% else %}
-                        {{ source.titre ?? source }}
-                    {% endif %}
-                </li>
+                <li>{% if source.url is defined %}<a href="{{ source.url }}" target="_blank" rel="noopener nofollow">{{ source.titre ?? 'Source' }}</a>{% else %}{{ source.titre ?? source }}{% endif %}</li>
                 {% endfor %}
             </ol>
         </div>
         {% endif %}
 
-        <!-- Tags -->
         {% if article.tags and article.tags|length > 0 %}
         <div class="tags-list">
-            {% for tag in article.tags %}
-            <span class="tag-badge">{{ tag }}</span>
-            {% endfor %}
+            {% for tag in article.tags %}<span class="tag-badge">{{ tag }}</span>{% endfor %}
         </div>
         {% endif %}
 
-        <!-- CTA -->
         <div class="article-cta">
             <h3>Cet article vous a été utile ?</h3>
             <p>Découvrez nos autres guides et analyses.</p>
@@ -179,16 +149,81 @@
         </div>
     </article>
 </div>
+
+{% else %}
+{# ===== ACTUALITÉ: centered, clean, Le Parisien style ===== #}
+<div style="max-width:780px; margin:0 auto; padding:2rem 1.5rem;">
+    <article id="article">
+        <div class="breadcrumb">
+            <a href="{{ path('app_home') }}">Accueil</a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="{{ path('app_category_actualites') }}">Actualités</a>
+        </div>
+
+        <div style="color:var(--accent); font-weight:700; font-size:.9rem; margin-bottom:.5rem;">
+            {% if event is defined and event %}
+                <a href="{{ path('app_type', {eventType: event.eventType}) }}" style="color:var(--accent);">{{ event.eventType|capitalize }}</a>
+            {% else %}
+                Actualité
+            {% endif %}
+        </div>
+
+        <h1 style="font-size:2rem; font-weight:800; color:var(--text-dark); line-height:1.25; margin-bottom:1rem;">{{ article.title }}</h1>
+
+        {% if article.excerpt %}
+        <p style="color:var(--text); font-size:1.1rem; line-height:1.6; margin-bottom:1rem;">{{ article.excerpt }}</p>
+        {% endif %}
+
+        <div style="font-size:.82rem; color:var(--text-light); margin-bottom:1.5rem;">
+            Par {{ domain }}
+            <span style="display:block; color:var(--accent); margin-top:.2rem;">Le {{ article.publishedAt ? article.publishedAt|date('d/m/Y') : article.createdAt|date('d/m/Y') }} · {{ readingTime }} min de lecture</span>
+        </div>
+
+        {% if event is defined and event %}
+        <div style="margin-bottom:1.5rem;">
+            {% if event.city %}
+            <a href="{{ path('app_city', {city: event.city}) }}" class="badge text-decoration-none" style="background:var(--bg-alt); color:var(--text-dark); font-size:.78rem; border:1px solid var(--border);">
+                <i class="bi bi-geo-alt-fill me-1" style="color:var(--accent);"></i>{{ event.city }}
+            </a>
+            {% endif %}
+            <a href="{{ path('app_type', {eventType: event.eventType}) }}" class="badge text-decoration-none" style="background:var(--bg-alt); color:var(--text-dark); font-size:.78rem; border:1px solid var(--border);">
+                <i class="bi bi-tag-fill me-1" style="color:var(--accent);"></i>{{ event.eventType }}
+            </a>
+        </div>
+        {% endif %}
+
+        {% if article.imageUrl is defined and article.imageUrl %}
+        <figure style="margin:0 0 2rem 0;">
+            <img src="{{ article.imageUrl }}" alt="{{ article.imageAlt ?? article.title }}" loading="eager"
+                 style="width:100%; max-height:480px; object-fit:cover;">
+            {% if article.imageAlt %}
+            <figcaption style="font-size:.72rem; color:var(--text-light); margin-top:.4rem; font-style:italic;">{{ article.imageAlt }}</figcaption>
+            {% endif %}
+        </figure>
+        {% endif %}
+
+        <div class="article-content" id="articleContent">
+            {{ article.content|raw }}
+        </div>
+
+        {% if article.tags and article.tags|length > 0 %}
+        <div class="tags-list" style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+            {% for tag in article.tags %}<span class="tag-badge">{{ tag }}</span>{% endfor %}
+        </div>
+        {% endif %}
+    </article>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block javascripts %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const content = document.getElementById('articleContent');
-    const tocList = document.getElementById('tocList');
     const headings = content.querySelectorAll('h2');
+    {% if isGuide %}
+    const tocList = document.getElementById('tocList');
 
-    // Build TOC
     headings.forEach((h, i) => {
         const id = 'title-' + (i + 1);
         h.id = id;
@@ -200,12 +235,10 @@ document.addEventListener('DOMContentLoaded', () => {
         tocList.appendChild(li);
     });
 
-    // Hide TOC if no headings
     if (headings.length === 0) {
         document.getElementById('articleSummary').style.display = 'none';
     }
 
-    // Highlight active TOC on scroll (IntersectionObserver like Ringover)
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -218,16 +251,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     headings.forEach(h => observer.observe(h));
 
-    // TOC click smooth scroll with offset
     tocList.addEventListener('click', e => {
         if (e.target.tagName === 'A') {
             e.preventDefault();
             const target = document.querySelector(e.target.getAttribute('href'));
-            if (target) {
-                window.scrollTo({ top: target.offsetTop - 100, behavior: 'smooth' });
-            }
+            if (target) window.scrollTo({ top: target.offsetTop - 100, behavior: 'smooth' });
         }
     });
+    {% endif %}
 
     // Reading progress bar
     const progressBar = document.getElementById('readingProgress');
@@ -239,12 +270,11 @@ document.addEventListener('DOMContentLoaded', () => {
         progressBar.style.width = Math.min(100, (scrolled / total) * 100) + '%';
     }, { passive: true });
 
-    // Auto-detect FAQ sections and build schema
+    // FAQ schema detection
     headings.forEach(h => {
         if (h.textContent.toLowerCase().includes('faq')) {
             const questions = [];
             let pointer = h.nextElementSibling;
-            let idx = 0;
             while (pointer && (pointer.tagName === 'H3' || pointer.tagName === 'P' || pointer.tagName === 'OL' || pointer.tagName === 'UL')) {
                 if (pointer.tagName === 'H3') {
                     questions.push({ question: pointer.textContent, response: [] });
@@ -262,11 +292,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const script = document.createElement('script');
                 script.type = 'application/ld+json';
                 script.textContent = JSON.stringify({
-                    '@context': 'https://schema.org',
-                    '@type': 'FAQPage',
+                    '@context': 'https://schema.org', '@type': 'FAQPage',
                     mainEntity: questions.map(q => ({
-                        '@type': 'Question',
-                        name: q.question,
+                        '@type': 'Question', name: q.question,
                         acceptedAnswer: { '@type': 'Answer', text: q.response.join(' ') }
                     }))
                 });
