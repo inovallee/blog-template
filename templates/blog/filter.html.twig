@@ -1,28 +1,86 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ filterValue }} — {{ app.request.host }}{% endblock %}
+{% set isCity = filterType == 'ville' %}
+{% set domain = app.request.host %}
+
+{% block title %}
+    {% if isCity %}Actualités à {{ filterValue }} — {{ domain }}
+    {% else %}{{ filterValue|capitalize }} — {{ domain }}{% endif %}
+{% endblock %}
+
 {% block meta %}
-<meta name="description" content="Articles {{ filterType == 'ville' ? 'à' : '' }} {{ filterValue }} sur {{ app.request.host }}">
+{% if isCity %}
+<meta name="description" content="Toutes les actualités à {{ filterValue }} : faits divers, événements, analyses locales sur {{ domain }}.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Actualités à {{ filterValue }} — {{ domain }}">
+<meta property="og:description" content="Retrouvez toutes les actualités et faits divers à {{ filterValue }} ({{ articles|length }} articles).">
+<meta property="og:url" content="https://{{ domain }}/ville/{{ filterValue|lower|replace({' ': '-'}) }}">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:site_name" content="Actualités {{ filterValue }} - {{ domain }}">
+<link rel="canonical" href="https://{{ domain }}/ville/{{ filterValue|lower|replace({' ': '-'}) }}">
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Actualités à {{ filterValue }}",
+    "description": "Toutes les actualités à {{ filterValue }} sur {{ domain }}",
+    "url": "https://{{ domain }}/ville/{{ filterValue|lower|replace({' ': '-'}) }}",
+    "inLanguage": "fr-FR",
+    "about": {
+        "@type": "Place",
+        "name": {{ filterValue|json_encode|raw }},
+        "address": {"@type": "PostalAddress", "addressCountry": "FR"}
+    },
+    "isPartOf": {"@type": "WebSite", "name": {{ domain|json_encode|raw }}, "url": "https://{{ domain }}/"}
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://{{ domain }}/"},
+        {"@type": "ListItem", "position": 2, "name": "Villes", "item": "https://{{ domain }}/actualites"},
+        {"@type": "ListItem", "position": 3, "name": {{ filterValue|json_encode|raw }}}
+    ]
+}
+</script>
+{% else %}
+<meta name="description" content="Articles {{ filterValue }} sur {{ domain }}">
+<link rel="canonical" href="https://{{ domain }}/type/{{ filterValue }}">
+{% endif %}
 {% endblock %}
 
 {% block body %}
 <div class="breadcrumb mt-2">
     <a href="{{ path('app_home') }}">Accueil</a>
     <span class="breadcrumb-separator">/</span>
+    {% if isCity %}
+        <a href="{{ path('app_home') }}" style="color:var(--text-light);">Villes</a>
+        <span class="breadcrumb-separator">/</span>
+    {% endif %}
     <span style="color:var(--text-light);">{{ filterValue }}</span>
 </div>
 
 <div class="section-header">
-    <h2>
-        {% if filterType == 'ville' %}
-        <i class="bi bi-geo-alt-fill me-1"></i>
+    <h1 style="font-size:1.8rem; font-weight:800;">
+        {% if isCity %}
+            <i class="bi bi-geo-alt-fill me-1" style="color:var(--accent);"></i>
+            Actualités à {{ filterValue }}
         {% else %}
-        <i class="bi bi-tag-fill me-1"></i>
+            <i class="bi bi-tag-fill me-1"></i>
+            {{ filterValue|capitalize }}
         {% endif %}
-        {{ filterValue }}
-    </h2>
+    </h1>
     <span style="color:var(--text-light); font-size:.85rem;">{{ articles|length }} article{{ articles|length > 1 ? 's' : '' }}</span>
 </div>
+
+{% if isCity %}
+<p style="color:var(--text); line-height:1.6; margin-bottom:1.5rem;">
+    Retrouvez sur cette page toutes les actualités, faits divers et événements à <strong>{{ filterValue }}</strong>.
+    Les articles sont publiés en continu et mis à jour quotidiennement à partir des sources de presse françaises vérifiées.
+</p>
+{% endif %}
 
 {% if articles is empty %}
 <p style="color:var(--text-light);">Aucun article pour cette catégorie.</p>

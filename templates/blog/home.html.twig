@@ -112,6 +112,49 @@
     </div>
 </div>
 
+{# ==== ACTUALITÉS PAR VILLE (SEO localité) ==== #}
+{% if citySections is defined and citySections|length > 0 %}
+<div class="mb-5">
+    <div class="section-header d-flex justify-content-between align-items-center">
+        <h2><i class="bi bi-geo-alt-fill me-2" style="color:var(--accent);"></i>Actualités par ville</h2>
+        <small><a href="{{ path('app_category_actualites') }}" class="text-decoration-none">Voir toutes les actualités →</a></small>
+    </div>
+    <div class="row g-4">
+        {% for section in citySections %}
+        <div class="col-md-6 col-lg-4">
+            <div class="city-section" style="border:1px solid var(--border); border-radius:8px; padding:1rem; background:#fff;">
+                <h3 style="font-size:1rem; font-weight:700; margin-bottom:.8rem; border-bottom:2px solid var(--accent); padding-bottom:.4rem;">
+                    <a href="{{ path('app_city', {city: section.city}) }}" class="text-decoration-none" style="color:var(--text-dark);">
+                        <i class="bi bi-geo-alt me-1"></i>{{ section.city }}
+                    </a>
+                    <small style="font-weight:400; color:var(--text-light); font-size:.75rem;">
+                        ({{ section.count }} article{{ section.count > 1 ? 's' : '' }})
+                    </small>
+                </h3>
+                <ul class="list-unstyled mb-2" style="font-size:.85rem;">
+                    {% for a in section.articles %}
+                    <li style="padding:.35rem 0; border-bottom:1px dotted var(--border);">
+                        <a href="{{ path('app_article', {slug: a.slug}) }}" class="text-decoration-none" style="color:var(--text-dark); line-height:1.35; display:inline-block;">
+                            {{ a.title|length > 75 ? a.title[:75] ~ '...' : a.title }}
+                        </a>
+                        {% if a.published_at %}
+                        <div style="font-size:.7rem; color:var(--text-light); margin-top:.15rem;">
+                            <i class="bi bi-clock"></i> {{ a.published_at|date('d/m/Y') }}
+                        </div>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                <a href="{{ path('app_city', {city: section.city}) }}" style="font-size:.8rem; color:var(--accent); text-decoration:none;">
+                    Toutes les actualités à {{ section.city }} →
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 {# ALL ARTICLES grid #}
 {% if articles|length > 7 %}
 <div class="mb-4">

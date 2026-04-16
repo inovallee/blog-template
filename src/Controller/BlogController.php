@@ -149,7 +149,21 @@ class BlogController extends AbstractController
     public function sitemap(EntityManagerInterface $em): Response
     {
         $articles = $em->getRepository(Article::class)->findAll();
-        $response = $this->render('blog/sitemap.xml.twig', ['articles' => $articles]);
+        $conn = $em->getConnection();
+
+        // Cities with at least 2 articles → worth a dedicated page in the sitemap
+        $cities = $conn->fetchAllAssociative(
+            "SELECT city, COUNT(*) as cnt FROM event WHERE city IS NOT NULL AND city != '' GROUP BY city HAVING cnt >= 2 ORDER BY cnt DESC"
+        );
+        $types = $conn->fetchFirstColumn(
+            "SELECT DISTINCT event_type FROM event WHERE event_type IS NOT NULL AND event_type != ''"
+        );
+
+        $response = $this->render('blog/sitemap.xml.twig', [
+            'articles' => $articles,
+            'cities' => $cities,
+            'types' => $types,
+        ]);
         $response->headers->set('Content-Type', 'application/xml');
         $response->setPublic();
         $response->setMaxAge(86400);
@@ -183,10 +197,26 @@ class BlogController extends AbstractController
         // Get event info for this article
         $event = $em->getRepository(Event::class)->findOneBy(['article' => $article]);
 
+        // Related articles — same city (widget "Autres actualités à X" en bas de page)
+        $relatedCity = [];
+        $city = $article->getCity() ?: ($event ? $event->getCity() : null);
+        if ($city) {
+            $relatedCity = $em->getConnection()->fetchAllAssociative(
+                "SELECT a.id, a.title, a.slug, a.image_url, a.published_at, a.excerpt
+                 FROM article a
+                 LEFT JOIN event e ON e.article_id = a.id
+                 WHERE (a.city = ? OR e.city = ?) AND a.id != ?
+                 ORDER BY a.published_at DESC LIMIT 6",
+                [$city, $city, $article->getId()]
+            );
+        }
+
         $response = $this->render('blog/article.html.twig', [
             'article' => $article,
             'tickerArticles' => $tickerArticles,
             'event' => $event,
+            'relatedCity' => $relatedCity,
+            'articleCity' => $city,
         ]);
         $response->setPublic();
         $response->setMaxAge(3600);

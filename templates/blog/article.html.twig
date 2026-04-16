@@ -24,48 +24,119 @@
 
 {% block title %}{{ article.metaTitle ?? article.title }}{% endblock %}
 {% block meta %}
+{# Préférence images: og_image_url (presse AFP/Reuters) > image_url (générée IA) #}
+{% set ogImg = article.ogImageUrl ?: (article.imageUrl ? 'https://' ~ domain ~ article.imageUrl : null) %}
+{% set ogImgWidth = article.ogImageWidth ?: 1200 %}
+{% set ogImgHeight = article.ogImageHeight ?: 630 %}
+{% set articleCity = article.city %}
+{% set siteName = articleCity ? 'Actualités ' ~ articleCity ~ ' - ' ~ domain : domain %}
+
 <meta name="description" content="{{ article.metaDescription ?? article.excerpt }}">
+<meta name="author" content="{{ article.authorName ?: 'Rédaction ' ~ domain }}">
+<meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://{{ domain }}/{{ article.slug }}">
+
+{# Open Graph — partages sociaux (Facebook, LinkedIn, WhatsApp, Slack, Discord) #}
+<meta property="og:locale" content="fr_FR">
 <meta property="og:url" content="https://{{ domain }}/{{ article.slug }}">
 <meta property="og:type" content="article">
 <meta property="og:title" content="{{ article.metaTitle ?? article.title }}">
 <meta property="og:description" content="{{ article.metaDescription ?? article.excerpt }}">
-<meta property="og:site_name" content="{{ domain }}">
+<meta property="og:site_name" content="{{ siteName }}">
+{% if ogImg %}
+<meta property="og:image" content="{{ ogImg }}">
+<meta property="og:image:secure_url" content="{{ ogImg }}">
+<meta property="og:image:width" content="{{ ogImgWidth }}">
+<meta property="og:image:height" content="{{ ogImgHeight }}">
+<meta property="og:image:alt" content="{{ article.imageAlt ?: article.title }}">
+{% endif %}
 <meta property="article:published_time" content="{{ article.publishedAt ? article.publishedAt|date('c') : article.createdAt|date('c') }}">
+<meta property="article:modified_time" content="{{ article.deployedAt ? article.deployedAt|date('c') : article.createdAt|date('c') }}">
+<meta property="article:section" content="{{ isGuide ? 'Guides' : 'Actualités' }}">
+<meta property="article:author" content="{{ article.authorName ?: 'Rédaction ' ~ domain }}">
 {% if article.tags %}{% for tag in article.tags %}<meta property="article:tag" content="{{ tag }}">
 {% endfor %}{% endif %}
-{% if article.imageUrl is defined and article.imageUrl %}
-<meta property="og:image" content="https://{{ domain }}{{ article.imageUrl }}">
-<meta name="twitter:image" content="https://{{ domain }}{{ article.imageUrl }}">
-{% endif %}
+
+{# Twitter / X Card #}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ article.metaTitle ?? article.title }}">
 <meta name="twitter:description" content="{{ article.metaDescription ?? article.excerpt }}">
+{% if ogImg %}<meta name="twitter:image" content="{{ ogImg }}">{% endif %}
+{% if ogImg %}<meta name="twitter:image:alt" content="{{ article.imageAlt ?: article.title }}">{% endif %}
+
+{# Geo tags (quand la ville OSINT est connue) #}
+{% if article.latitude and article.longitude %}
+<meta name="geo.region" content="FR">
+<meta name="geo.placename" content="{{ articleCity }}">
+<meta name="geo.position" content="{{ article.latitude }};{{ article.longitude }}">
+<meta name="ICBM" content="{{ article.latitude }}, {{ article.longitude }}">
+{% endif %}
+
+{# JSON-LD: NewsArticle pour les actualités (boost Google News), Article pour les guides #}
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "{{ article.title|e('js') }}",
-    "description": "{{ (article.metaDescription ?? article.excerpt)|e('js') }}",
+    "@type": "{{ isGuide ? 'Article' : 'NewsArticle' }}",
+    "headline": {{ article.title|json_encode|raw }},
+    "description": {{ (article.metaDescription ?? article.excerpt)|json_encode|raw }},
     "datePublished": "{{ article.publishedAt ? article.publishedAt|date('c') : article.createdAt|date('c') }}",
     "dateModified": "{{ article.deployedAt ? article.deployedAt|date('c') : article.createdAt|date('c') }}",
     "wordCount": {{ wordCount }},
-    {% if article.imageUrl %}"image": "https://{{ domain }}{{ article.imageUrl }}",{% endif %}
-    "author": {"@type": "Organization", "name": "{{ domain }}", "url": "https://{{ domain }}"},
-    "publisher": {"@type": "Organization", "name": "{{ domain }}", "url": "https://{{ domain }}"},
+    {% if ogImg %}"image": {
+        "@type": "ImageObject",
+        "url": {{ ogImg|json_encode|raw }},
+        "width": {{ ogImgWidth }},
+        "height": {{ ogImgHeight }}
+    },{% endif %}
+    "author": {
+        "@type": "Organization",
+        "name": {{ (article.authorName ?: 'Rédaction ' ~ domain)|json_encode|raw }},
+        "url": "https://{{ domain }}"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": {{ domain|json_encode|raw }},
+        "url": "https://{{ domain }}",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://{{ domain }}/favicon.ico"
+        }
+    },
     "mainEntityOfPage": {"@type": "WebPage", "@id": "https://{{ domain }}/{{ article.slug }}"},
-    "articleSection": "{{ isGuide ? 'Guides' : 'Actualités' }}"
-    {% if article.keyword %}, "keywords": "{{ article.keyword|e('js') }}"{% endif %}
+    "articleSection": "{{ isGuide ? 'Guides' : 'Actualités' }}",
+    "inLanguage": "fr-FR"
+    {% if article.keyword %}, "keywords": {{ article.keyword|json_encode|raw }}{% endif %}
+    {% if articleCity %}, "contentLocation": {
+        "@type": "Place",
+        "name": {{ articleCity|json_encode|raw }}
+        {% if article.latitude and article.longitude %}, "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": {{ article.latitude }},
+            "longitude": {{ article.longitude }}
+        }{% endif %}
+    }{% endif %}
+    {% if article.videoUrl and article.videoThumbnail %}, "video": {
+        "@type": "VideoObject",
+        "name": {{ article.title|json_encode|raw }},
+        "description": {{ (article.metaDescription ?? article.excerpt)|json_encode|raw }},
+        "thumbnailUrl": {{ article.videoThumbnail|json_encode|raw }},
+        "uploadDate": "{{ article.publishedAt ? article.publishedAt|date('c') : article.createdAt|date('c') }}",
+        "contentUrl": {{ article.videoUrl|json_encode|raw }},
+        "embedUrl": {{ article.videoUrl|replace({'watch?v=': 'embed/'})|json_encode|raw }}
+    }{% endif %}
 }
 </script>
+
+{# BreadcrumbList avec ville si disponible #}
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
         {"@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://{{ domain }}/"},
-        {"@type": "ListItem", "position": 2, "name": "{{ isGuide ? 'Guides' : 'Actualités' }}", "item": "https://{{ domain }}/{{ isGuide ? 'guides' : 'actualites' }}"},
-        {"@type": "ListItem", "position": 3, "name": "{{ article.title|e('js') }}"}
+        {"@type": "ListItem", "position": 2, "name": "{{ isGuide ? 'Guides' : 'Actualités' }}", "item": "https://{{ domain }}/{{ isGuide ? 'guides' : 'actualites' }}"}
+        {% if articleCity %}, {"@type": "ListItem", "position": 3, "name": {{ articleCity|json_encode|raw }}, "item": "https://{{ domain }}/ville/{{ articleCity|lower|replace({' ': '-'}) }}"}{% endif %}
+        , {"@type": "ListItem", "position": {{ articleCity ? 4 : 3 }}, "name": {{ article.title|json_encode|raw }}}
     ]
 }
 </script>
@@ -125,6 +196,15 @@
             {{ article.content|raw }}
         </div>
 
+        {% if article.videoEmbedCode %}
+        <div class="article-video" style="margin:1.5rem 0;">
+            <h3 style="font-size:1rem;color:#6b7280;margin-bottom:.5rem;">
+                <i class="bi bi-play-circle me-1"></i>Vidéo liée
+            </h3>
+            {{ article.videoEmbedCode|raw }}
+        </div>
+        {% endif %}
+
         {% if article.sources and article.sources|length > 0 %}
         <div class="sources-box">
             <h3><i class="bi bi-journal-bookmark me-1"></i>Sources et références</h3>
@@ -139,6 +219,29 @@
         {% if article.tags and article.tags|length > 0 %}
         <div class="tags-list">
             {% for tag in article.tags %}<span class="tag-badge">{{ tag }}</span>{% endfor %}
+        </div>
+        {% endif %}
+
+        {# Widget: autres actus dans la même ville (guide evergreen, rare mais utile) #}
+        {% if articleCity is defined and articleCity and relatedCity is defined and relatedCity|length > 0 %}
+        <div style="margin-top:2rem; padding:1.5rem; background:var(--bg-alt); border-radius:8px;">
+            <h3 style="font-size:1.1rem; margin-bottom:1rem;">
+                <i class="bi bi-geo-alt-fill me-1" style="color:var(--accent);"></i>
+                Autres articles à {{ articleCity }}
+            </h3>
+            <div class="row g-3">
+                {% for r in relatedCity %}
+                <div class="col-md-6">
+                    <a href="/{{ r.slug }}" class="text-decoration-none" style="color:var(--text-dark); display:block; padding:.5rem 0; border-bottom:1px dotted var(--border);">
+                        <strong style="font-size:.9rem; line-height:1.35;">{{ r.title|length > 80 ? r.title[:80] ~ '...' : r.title }}</strong>
+                        {% if r.published_at %}<div style="font-size:.7rem; color:var(--text-light); margin-top:.2rem;">{{ r.published_at|date('d/m/Y') }}</div>{% endif %}
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            <a href="{{ path('app_city', {city: articleCity}) }}" style="margin-top:.8rem; display:inline-block; color:var(--accent); text-decoration:none; font-size:.85rem;">
+                Toutes les actualités à {{ articleCity }} →
+            </a>
         </div>
         {% endif %}
 
@@ -206,9 +309,41 @@
             {{ article.content|raw }}
         </div>
 
+        {% if article.videoEmbedCode %}
+        <div class="article-video" style="margin:1.5rem 0;">
+            <h3 style="font-size:1rem;color:#6b7280;margin-bottom:.5rem;">
+                <i class="bi bi-play-circle me-1"></i>Vidéo liée
+            </h3>
+            {{ article.videoEmbedCode|raw }}
+        </div>
+        {% endif %}
+
         {% if article.tags and article.tags|length > 0 %}
         <div class="tags-list" style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
             {% for tag in article.tags %}<span class="tag-badge">{{ tag }}</span>{% endfor %}
+        </div>
+        {% endif %}
+
+        {# Widget: autres actus dans la même ville (SEO local) #}
+        {% if articleCity is defined and articleCity and relatedCity is defined and relatedCity|length > 0 %}
+        <div style="margin-top:2rem; padding:1.5rem; background:var(--bg-alt); border-radius:8px;">
+            <h3 style="font-size:1.1rem; margin-bottom:1rem;">
+                <i class="bi bi-geo-alt-fill me-1" style="color:var(--accent);"></i>
+                Autres actualités à {{ articleCity }}
+            </h3>
+            <div class="row g-3">
+                {% for r in relatedCity %}
+                <div class="col-md-6">
+                    <a href="/{{ r.slug }}" class="text-decoration-none" style="color:var(--text-dark); display:block; padding:.5rem 0; border-bottom:1px dotted var(--border);">
+                        <strong style="font-size:.9rem; line-height:1.35;">{{ r.title|length > 80 ? r.title[:80] ~ '...' : r.title }}</strong>
+                        {% if r.published_at %}<div style="font-size:.7rem; color:var(--text-light); margin-top:.2rem;">{{ r.published_at|date('d/m/Y') }}</div>{% endif %}
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            <a href="{{ path('app_city', {city: articleCity}) }}" style="margin-top:.8rem; display:inline-block; color:var(--accent); text-decoration:none; font-size:.85rem;">
+                Toutes les actualités à {{ articleCity }} →
+            </a>
         </div>
         {% endif %}
     </article>
