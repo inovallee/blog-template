@@ -84,26 +84,64 @@ class BlogController extends AbstractController
 
     /**
      * Sub-request renderable via {{ render(controller('App\\Controller\\BlogController::topNav')) }}.
-     * Affiche le topnav avec les catégories réelles (event_type) du blog.
-     * Utilisable depuis n'importe quel template (home, article, filter, etc.).
+     * Source des catégories (par ordre de priorité):
+     *   1. blog_config['topnav_categories'] = liste pushée par l'admin depuis les
+     *      RSS feeds activés (le user les coche dans /admin/blog/X/rss-feeds).
+     *      → Garantit que les catégories du topnav matchent le contenu réel.
+     *   2. Fallback: agrégation des event_type des articles (legacy).
      */
     public function topNav(EntityManagerInterface $em): Response
     {
         static $cached = null;
         if ($cached === null) {
             $typeLabels = [
-                'crime' => 'Faits divers', 'accident' => 'Accidents', 'incendie' => 'Incendies',
+                'crime' => 'Faits divers', 'faits-divers' => 'Faits divers',
+                'accident' => 'Accidents', 'incendie' => 'Incendies',
                 'politique' => 'Politique', 'economie' => 'Économie', 'sport' => 'Sport',
-                'technologie' => 'Technologie', 'societe' => 'Société', 'sante' => 'Santé',
-                'environnement' => 'Environnement', 'tech' => 'Tech', 'culture' => 'Culture',
-                'international' => 'International', 'auto' => 'Auto', 'sciences' => 'Sciences',
+                'technologie' => 'Tech', 'tech' => 'Tech', 'tech-b2b' => 'Tech IT',
+                'cybersecurite' => 'Cybersécurité', 'societe' => 'Société',
+                'sante' => 'Santé', 'environnement' => 'Environnement',
+                'culture' => 'Culture', 'international' => 'International',
+                'auto' => 'Auto', 'sciences' => 'Sciences', 'industrie' => 'Industrie',
+                'regional' => 'Régional', 'general' => 'À la une',
             ];
-            $rows = $em->getConnection()->fetchAllAssociative(
-                "SELECT event_type, COUNT(*) AS cnt FROM event WHERE event_type IS NOT NULL AND event_type != '' GROUP BY event_type ORDER BY cnt DESC LIMIT 8"
-            );
+            $conn = $em->getConnection();
             $cached = [];
-            foreach ($rows as $r) {
-                $cached[] = ['type' => $r['event_type'], 'label' => $typeLabels[$r['event_type']] ?? ucfirst($r['event_type']), 'count' => (int) $r['cnt']];
+
+            // Source 1: blog_config['topnav_categories'] pushé par admin
+            try {
+                $row = $conn->fetchAssociative(
+                    "SELECT config_value FROM blog_config WHERE config_key = 'topnav_categories'"
+                );
+                if ($row && $row['config_value']) {
+                    $cats = json_decode($row['config_value'], true);
+                    if (is_array($cats)) {
+                        // Filtrer 'general' qui correspond à "À la une" déjà dans le nav
+                        foreach ($cats as $cat) {
+                            if ($cat === 'general' || isset($seenCats[$cat])) continue;
+                            $seenCats[$cat] = true;
+                            $cached[] = [
+                                'type' => $cat,
+                                'label' => $typeLabels[$cat] ?? ucfirst($cat),
+                            ];
+                            if (count($cached) >= 8) break;
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Table blog_config pas encore créée → fallback
+            }
+
+            // Source 2: fallback sur event_type (legacy / blogs sans config)
+            if (empty($cached)) {
+                try {
+                    $rows = $conn->fetchAllAssociative(
+                        "SELECT event_type, COUNT(*) AS cnt FROM event WHERE event_type IS NOT NULL AND event_type != '' GROUP BY event_type ORDER BY cnt DESC LIMIT 8"
+                    );
+                    foreach ($rows as $r) {
+                        $cached[] = ['type' => $r['event_type'], 'label' => $typeLabels[$r['event_type']] ?? ucfirst($r['event_type'])];
+                    }
+                } catch (\Throwable $e) {}
             }
         }
         $response = $this->render('blog/_topnav.html.twig', ['topNavTypes' => $cached]);
