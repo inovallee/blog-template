@@ -195,7 +195,7 @@
         </div>
     </header>
 
-    {% block topnav %}{% endblock %}
+    {% block topnav %}{{ render(controller('App\\Controller\\BlogController::topNav')) }}{% endblock %}
     {% block ticker %}{% endblock %}
 
     {% block body_wrapper %}

@@ -1,0 +1,14 @@
+{% set route = app.request.attributes.get('_route') %}
+<nav class="topnav d-none d-md-block">
+    <div class="topnav-inner">
+        <a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'active' : '' }}">À la une</a>
+        <span class="sep"></span>
+        <a href="{{ path('app_category_actualites') }}" class="{{ route == 'app_category_actualites' ? 'active' : '' }}">En continu</a>
+        {% if topNavTypes|length > 0 %}<span class="sep"></span>{% endif %}
+        {% for t in topNavTypes %}
+        <a href="{{ path('app_type', {eventType: t.type}) }}" class="{{ route == 'app_type' and app.request.attributes.get('eventType') == t.type ? 'active' : '' }}">{{ t.label }}</a>
+        {% endfor %}
+        <span class="sep"></span>
+        <a href="{{ path('app_category_evergreen') }}" class="{{ route == 'app_category_evergreen' ? 'active' : '' }}">Guides</a>
+    </div>
+</nav>

@@ -6,23 +6,7 @@
 <link rel="canonical" href="https://{{ app.request.host }}/">
 {% endblock %}
 
-{% block topnav %}
-<nav class="topnav d-none d-md-block">
-    <div class="topnav-inner">
-        <a href="{{ path('app_home') }}" class="active">À la une</a>
-        <span class="sep"></span>
-        <a href="{{ path('app_category_actualites') }}">En continu</a>
-        {% if typeSections is defined and typeSections|length > 0 %}
-        <span class="sep"></span>
-        {% for section in typeSections %}
-        <a href="{{ path('app_type', {eventType: section.type}) }}">{{ section.label }}</a>
-        {% endfor %}
-        {% endif %}
-        <span class="sep"></span>
-        <a href="{{ path('app_category_evergreen') }}">Guides</a>
-    </div>
-</nav>
-{% endblock %}
+{# topnav géré globalement par base.html.twig via render(controller(BlogController::topNav)) #}
 
 {% block ticker %}
 {% set actus = articles|filter(a => a.category == 'actualites') %}

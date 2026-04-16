@@ -82,6 +82,36 @@ class BlogController extends AbstractController
         return $response;
     }
 
+    /**
+     * Sub-request renderable via {{ render(controller('App\\Controller\\BlogController::topNav')) }}.
+     * Affiche le topnav avec les catégories réelles (event_type) du blog.
+     * Utilisable depuis n'importe quel template (home, article, filter, etc.).
+     */
+    public function topNav(EntityManagerInterface $em): Response
+    {
+        static $cached = null;
+        if ($cached === null) {
+            $typeLabels = [
+                'crime' => 'Faits divers', 'accident' => 'Accidents', 'incendie' => 'Incendies',
+                'politique' => 'Politique', 'economie' => 'Économie', 'sport' => 'Sport',
+                'technologie' => 'Technologie', 'societe' => 'Société', 'sante' => 'Santé',
+                'environnement' => 'Environnement', 'tech' => 'Tech', 'culture' => 'Culture',
+                'international' => 'International', 'auto' => 'Auto', 'sciences' => 'Sciences',
+            ];
+            $rows = $em->getConnection()->fetchAllAssociative(
+                "SELECT event_type, COUNT(*) AS cnt FROM event WHERE event_type IS NOT NULL AND event_type != '' GROUP BY event_type ORDER BY cnt DESC LIMIT 8"
+            );
+            $cached = [];
+            foreach ($rows as $r) {
+                $cached[] = ['type' => $r['event_type'], 'label' => $typeLabels[$r['event_type']] ?? ucfirst($r['event_type']), 'count' => (int) $r['cnt']];
+            }
+        }
+        $response = $this->render('blog/_topnav.html.twig', ['topNavTypes' => $cached]);
+        $response->setPublic();
+        $response->setMaxAge(900);
+        return $response;
+    }
+
     #[Route('/guides', name: 'app_category_evergreen')]
     public function evergreen(EntityManagerInterface $em): Response
     {
