@@ -198,9 +198,16 @@
 
         {% if article.videoEmbedCode %}
         <div class="article-video" style="margin:1.5rem 0;">
-            <h3 style="font-size:1rem;color:#6b7280;margin-bottom:.5rem;">
-                <i class="bi bi-play-circle me-1"></i>Vidéo liée
-            </h3>
+            <div style="font-size:.85rem;color:#6b7280;margin-bottom:.5rem;">
+                <i class="bi bi-play-circle me-1"></i>
+                <strong>Vidéo liée</strong>
+                {% if article.videoTitle %} :
+                    <a href="{{ article.videoUrl }}" target="_blank" rel="noopener" style="color:var(--text-dark); text-decoration:none;">
+                        « {{ article.videoTitle }} »
+                    </a>
+                    {% if article.videoChannel %}<span style="color:#9ca3af;">— {{ article.videoChannel }}</span>{% endif %}
+                {% endif %}
+            </div>
             {{ article.videoEmbedCode|raw }}
         </div>
         {% endif %}
@@ -311,9 +318,16 @@
 
         {% if article.videoEmbedCode %}
         <div class="article-video" style="margin:1.5rem 0;">
-            <h3 style="font-size:1rem;color:#6b7280;margin-bottom:.5rem;">
-                <i class="bi bi-play-circle me-1"></i>Vidéo liée
-            </h3>
+            <div style="font-size:.85rem;color:#6b7280;margin-bottom:.5rem;">
+                <i class="bi bi-play-circle me-1"></i>
+                <strong>Vidéo liée</strong>
+                {% if article.videoTitle %} :
+                    <a href="{{ article.videoUrl }}" target="_blank" rel="noopener" style="color:var(--text-dark); text-decoration:none;">
+                        « {{ article.videoTitle }} »
+                    </a>
+                    {% if article.videoChannel %}<span style="color:#9ca3af;">— {{ article.videoChannel }}</span>{% endif %}
+                {% endif %}
+            </div>
             {{ article.videoEmbedCode|raw }}
         </div>
         {% endif %}

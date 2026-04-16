@@ -88,6 +88,12 @@ class Article
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $videoThumbnail = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $videoTitle = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $videoChannel = null;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $publishedAt = null;
 
@@ -154,4 +160,8 @@ class Article
     public function setVideoEmbedCode(?string $c): static { $this->videoEmbedCode = $c; return $this; }
     public function getVideoThumbnail(): ?string { return $this->videoThumbnail; }
     public function setVideoThumbnail(?string $t): static { $this->videoThumbnail = $t; return $this; }
+    public function getVideoTitle(): ?string { return $this->videoTitle; }
+    public function setVideoTitle(?string $t): static { $this->videoTitle = $t; return $this; }
+    public function getVideoChannel(): ?string { return $this->videoChannel; }
+    public function setVideoChannel(?string $c): static { $this->videoChannel = $c; return $this; }
 }
