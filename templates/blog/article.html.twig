@@ -198,14 +198,13 @@
 
         {% if article.videoEmbedCode %}
         <div class="article-video" style="margin:1.5rem 0;">
-            <div style="font-size:.85rem;color:#6b7280;margin-bottom:.5rem;">
-                <i class="bi bi-play-circle me-1"></i>
-                <strong>Vidéo liée</strong>
+            <div style="font-size:.9rem;color:var(--text);margin-bottom:.6rem;line-height:1.45;">
+                <i class="bi bi-play-circle-fill me-1" style="color:var(--accent);"></i>
+                {% if article.videoIntro %}{{ article.videoIntro }}{% else %}<strong>Vidéo liée</strong>{% endif %}
                 {% if article.videoTitle %} :
-                    <a href="{{ article.videoUrl }}" target="_blank" rel="noopener" style="color:var(--text-dark); text-decoration:none;">
+                    <a href="{{ article.videoUrl }}" target="_blank" rel="noopener" style="color:var(--text-dark); text-decoration:none; font-weight:600;">
                         « {{ article.videoTitle }} »
-                    </a>
-                    {% if article.videoChannel %}<span style="color:#9ca3af;">— {{ article.videoChannel }}</span>{% endif %}
+                    </a>{% if article.videoChannel %} <span style="color:#9ca3af;font-size:.85rem;">— {{ article.videoChannel }}</span>{% endif %}
                 {% endif %}
             </div>
             {{ article.videoEmbedCode|raw }}
@@ -318,14 +317,13 @@
 
         {% if article.videoEmbedCode %}
         <div class="article-video" style="margin:1.5rem 0;">
-            <div style="font-size:.85rem;color:#6b7280;margin-bottom:.5rem;">
-                <i class="bi bi-play-circle me-1"></i>
-                <strong>Vidéo liée</strong>
+            <div style="font-size:.9rem;color:var(--text);margin-bottom:.6rem;line-height:1.45;">
+                <i class="bi bi-play-circle-fill me-1" style="color:var(--accent);"></i>
+                {% if article.videoIntro %}{{ article.videoIntro }}{% else %}<strong>Vidéo liée</strong>{% endif %}
                 {% if article.videoTitle %} :
-                    <a href="{{ article.videoUrl }}" target="_blank" rel="noopener" style="color:var(--text-dark); text-decoration:none;">
+                    <a href="{{ article.videoUrl }}" target="_blank" rel="noopener" style="color:var(--text-dark); text-decoration:none; font-weight:600;">
                         « {{ article.videoTitle }} »
-                    </a>
-                    {% if article.videoChannel %}<span style="color:#9ca3af;">— {{ article.videoChannel }}</span>{% endif %}
+                    </a>{% if article.videoChannel %} <span style="color:#9ca3af;font-size:.85rem;">— {{ article.videoChannel }}</span>{% endif %}
                 {% endif %}
             </div>
             {{ article.videoEmbedCode|raw }}

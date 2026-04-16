@@ -94,6 +94,9 @@ class Article
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $videoChannel = null;
 
+    #[ORM\Column(length: 200, nullable: true)]
+    private ?string $videoIntro = null;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $publishedAt = null;
 
@@ -164,4 +167,6 @@ class Article
     public function setVideoTitle(?string $t): static { $this->videoTitle = $t; return $this; }
     public function getVideoChannel(): ?string { return $this->videoChannel; }
     public function setVideoChannel(?string $c): static { $this->videoChannel = $c; return $this; }
+    public function getVideoIntro(): ?string { return $this->videoIntro; }
+    public function setVideoIntro(?string $i): static { $this->videoIntro = $i; return $this; }
 }
