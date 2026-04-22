@@ -68,13 +68,35 @@ class BlogController extends AbstractController
             }
         }
 
+        // Trending tags — Euronews style bar under header
+        // Récupère les tags les plus fréquents des 50 derniers articles
+        $trendingTags = [];
+        try {
+            $tagRows = $conn->fetchAllAssociative(
+                "SELECT tags FROM article WHERE tags IS NOT NULL ORDER BY published_at DESC LIMIT 50"
+            );
+            $tagCounts = [];
+            foreach ($tagRows as $row) {
+                $tags = json_decode($row['tags'] ?: '[]', true);
+                if (is_array($tags)) {
+                    foreach ($tags as $tag) {
+                        $tag = trim($tag);
+                        if ($tag && mb_strlen($tag) >= 3) {
+                            $tagCounts[$tag] = ($tagCounts[$tag] ?? 0) + 1;
+                        }
+                    }
+                }
+            }
+            arsort($tagCounts);
+            $trendingTags = array_slice(array_keys($tagCounts), 0, 8);
+        } catch (\Throwable $e) {}
+
         $response = $this->render('blog/home.html.twig', [
             'articles' => $articles,
             'total' => $total,
             'page' => $page,
             'pages' => $pages,
-            'citySections' => $citySections,
-            'typeSections' => $typeSections,
+            'trendingTags' => $trendingTags,
         ]);
         $response->setPublic();
         $response->setMaxAge(600);
