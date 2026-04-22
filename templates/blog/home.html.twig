@@ -6,8 +6,6 @@
 <link rel="canonical" href="https://{{ app.request.host }}/">
 {% endblock %}
 
-{# topnav géré globalement par base.html.twig via render(controller(BlogController::topNav)) #}
-
 {% block ticker %}
 {% set actus = articles|filter(a => a.category == 'actualites') %}
 {% if actus|length > 0 %}
@@ -30,32 +28,27 @@
 {% if articles|length > 0 %}
 {% set featured = articles|first %}
 
-{# ===== TAGS BAR — Euronews trending topics style ===== #}
+{# ===== TAGS BAR — trending topics ===== #}
 {% if trendingTags is defined and trendingTags|length > 0 %}
-<div style="text-align:center; padding:.8rem 0; border-bottom:1px solid var(--border); margin-bottom:2rem;">
+<div style="text-align:center; padding:.7rem 0; border-bottom:1px solid var(--border); margin-bottom:1.5rem;">
     {% for tag in trendingTags %}
-    <a href="{{ path('app_category_actualites') }}?q={{ tag|url_encode }}" style="color:var(--accent); font-size:.9rem; font-weight:600;">{{ tag }}</a>
-    {% if not loop.last %}<span style="color:var(--border); margin:0 .5rem;">|</span>{% endif %}
+    <a href="{{ path('app_category_actualites') }}" style="color:var(--accent); font-size:.85rem; font-weight:600;">{{ tag }}</a>
+    {% if not loop.last %}<span style="color:#ccc; margin:0 .4rem;">|</span>{% endif %}
     {% endfor %}
 </div>
 {% endif %}
 
-{# ===== HERO — Euronews: titre gauche + image centre + "En continu" droite (même hauteur) ===== #}
-<div class="hero-euronews" style="display:flex; gap:0; border-bottom:1px solid var(--border); padding-bottom:1.5rem; margin-bottom:2rem; align-items:stretch;">
+{# ===== HERO — Euronews exact: titre gauche + image centre + "En continu" droite ===== #}
+<div class="hero-euronews" style="display:flex; gap:0; margin-bottom:2rem; align-items:flex-start;">
     {# Left: title + excerpt #}
     <div style="flex:0 0 33%; padding-right:2rem;">
-        <h1 style="font-size:1.9rem; font-weight:700; line-height:1.2; margin:0 0 1rem 0; color:var(--text-dark);">
+        <h1 style="font-size:2rem; font-weight:700; line-height:1.15; margin:0 0 1rem 0; color:var(--text-dark);">
             <a href="{{ path('app_article', {slug: featured.slug}) }}" style="color:var(--text-dark); text-decoration:none;">{{ featured.title }}</a>
         </h1>
         {% if featured.excerpt %}
-        <p style="color:var(--text); font-size:.9rem; line-height:1.6; margin-bottom:1rem;">{{ featured.excerpt|length > 180 ? featured.excerpt[:180] ~ '...' : featured.excerpt }}</p>
+        <p style="color:var(--text); font-size:.9rem; line-height:1.55; margin:0;">{{ featured.excerpt|length > 180 ? featured.excerpt[:180] ~ '...' : featured.excerpt }}</p>
         {% endif %}
-        <div style="font-size:.78rem; color:var(--text-light);">
-            {{ featured.publishedAt ? featured.publishedAt|date('d/m/Y') : '' }}
-            · {{ (featured.content|striptags|split(' ')|length / 250)|round(0, 'ceil') }} min
-        </div>
     </div>
-
     {# Center: hero image #}
     <div style="flex:0 0 42%;">
         {% if featured.imageUrl %}
@@ -65,43 +58,70 @@
         </a>
         {% endif %}
     </div>
-
-    {# Right: "En continu" — overflow:hidden pour ne pas dépasser la hauteur de l'image #}
-    <div style="flex:1; padding-left:1.5rem; border-left:3px solid var(--accent); margin-left:1.5rem; overflow:hidden; position:relative;">
+    {# Right: "En continu" #}
+    <div style="flex:1; padding-left:1.5rem; margin-left:1.5rem; border-left:3px solid var(--accent); overflow:hidden;">
         <h4 style="font-weight:700; font-size:.85rem; text-transform:uppercase; letter-spacing:.03em; margin:0 0 .6rem 0; color:var(--text-dark);">En continu</h4>
         {% for article in articles|slice(1, 6) %}
-        <div style="padding:.4rem 0; border-bottom:1px solid var(--border); {% if loop.last %}border-bottom:none;{% endif %}">
-            {% if article.publishedAt %}
-            <div style="font-size:.7rem; color:var(--accent); font-weight:600;">{{ article.publishedAt|date('H:i') }}</div>
-            {% endif %}
+        <div style="padding:.35rem 0; border-bottom:1px solid var(--border); {% if loop.last %}border-bottom:none;{% endif %}">
+            <div style="font-size:.7rem; color:var(--accent); font-weight:600;">{{ article.publishedAt ? article.publishedAt|date('H:i') : '' }}</div>
             <a href="{{ path('app_article', {slug: article.slug}) }}" style="color:var(--text-dark); font-size:.8rem; font-weight:600; line-height:1.3; display:block;">
                 {{ article.title|length > 55 ? article.title[:55] ~ '...' : article.title }}
             </a>
         </div>
         {% endfor %}
-        {# Lien "Voir plus" comme Euronews #}
-        <div style="text-align:center; margin-top:.6rem;">
-            <a href="{{ path('app_category_actualites') }}" style="font-size:.8rem; font-weight:600; color:var(--accent); border:1px solid var(--accent); padding:.3rem 1rem; border-radius:20px; display:inline-block;">Voir plus ›</a>
+        <div style="text-align:center; margin-top:.5rem;">
+            <a href="{{ path('app_category_actualites') }}" style="font-size:.78rem; font-weight:600; color:var(--accent); border:1px solid var(--accent); padding:.25rem .8rem; border-radius:20px;">Voir plus ›</a>
         </div>
     </div>
 </div>
 
-<style>
-@media (max-width: 991px) {
-    .hero-euronews { flex-direction: column !important; }
-    .hero-euronews > div { flex: none !important; width: 100% !important; padding: 0 !important; margin: 0 0 1rem 0 !important; border-left: none !important; }
-}
-</style>
-
-{# ===== ARTICLES GRID — Euronews card layout ===== #}
-{% if articles|length > 1 %}
-<div class="mb-4">
-    <div class="section-header">
-        <h2>Tous les articles <span style="font-weight:400; font-size:.82rem; color:var(--text-light);">({{ total }})</span></h2>
+{# ===== 3 CARDS ROW — Euronews style: image + category text + title (NO excerpt) ===== #}
+{% if articles|length > 3 %}
+<div style="display:flex; gap:1.5rem; margin-bottom:2rem; border-top:1px solid var(--border); padding-top:1.5rem;">
+    {% for article in articles|slice(1, 4) %}
+    <div style="flex:1;">
+        {% if article.imageUrl %}
+        <a href="{{ path('app_article', {slug: article.slug}) }}">
+            <img src="{{ article.imageUrl }}" alt="{{ article.imageAlt ?? article.title }}" loading="lazy"
+                 style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block; margin-bottom:.6rem;">
+        </a>
+        {% endif %}
+        <div style="font-size:.78rem; font-weight:700; color:var(--accent); margin-bottom:.3rem;">{{ article.category == 'evergreen' ? 'Guide' : 'Actualité' }}</div>
+        <h3 style="font-size:1rem; font-weight:700; line-height:1.3; margin:0;">
+            <a href="{{ path('app_article', {slug: article.slug}) }}" style="color:var(--text-dark); text-decoration:none;">{{ article.title }}</a>
+        </h3>
     </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# ===== HORIZONTAL CARDS — Euronews style: thumbnail left + category + title right ===== #}
+{% if articles|length > 5 %}
+<div style="display:flex; gap:2rem; margin-bottom:2rem; flex-wrap:wrap;">
+    {% for article in articles|slice(4, 4) %}
+    <div style="flex:0 0 calc(50% - 1rem); display:flex; gap:1rem; align-items:flex-start;">
+        {% if article.imageUrl %}
+        <a href="{{ path('app_article', {slug: article.slug}) }}" style="flex:0 0 200px;">
+            <img src="{{ article.imageUrl }}" alt="{{ article.imageAlt ?? article.title }}" loading="lazy"
+                 style="width:200px; height:120px; object-fit:cover; display:block;">
+        </a>
+        {% endif %}
+        <div>
+            <div style="font-size:.78rem; font-weight:700; color:var(--accent); margin-bottom:.3rem;">{{ article.category == 'evergreen' ? 'Guide' : 'Actualité' }}</div>
+            <h3 style="font-size:.95rem; font-weight:700; line-height:1.3; margin:0;">
+                <a href="{{ path('app_article', {slug: article.slug}) }}" style="color:var(--text-dark); text-decoration:none;">{{ article.title }}</a>
+            </h3>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# ===== REMAINING ARTICLES — simple 3-col grid ===== #}
+{% if articles|length > 8 %}
+<div style="border-top:3px solid var(--text-dark); padding-top:1rem; margin-bottom:2rem;">
     <div class="row g-3">
-        {% for article in articles %}
-        {% if not loop.first or page > 1 %}
+        {% for article in articles|slice(8) %}
         <div class="col-md-6 col-lg-4">
             <div class="article-card h-100">
                 {% if article.imageUrl %}
@@ -112,16 +132,12 @@
                 <div class="card-body">
                     <span class="category-pill mb-1">{{ article.category == 'evergreen' ? 'GUIDE' : 'ACTUALITÉ' }}</span>
                     <h3 class="card-title"><a href="{{ path('app_article', {slug: article.slug}) }}">{{ article.title }}</a></h3>
-                    {% if article.excerpt %}
-                    <p class="card-text" style="margin-top:.3rem;">{{ article.excerpt|length > 100 ? article.excerpt[:100] ~ '...' : article.excerpt }}</p>
-                    {% endif %}
-                    <div style="font-size:.75rem; color:var(--text-light); margin-top:.5rem;">
+                    <div style="font-size:.75rem; color:var(--text-light); margin-top:.3rem;">
                         {{ article.publishedAt ? article.publishedAt|date('d/m/Y') : '' }}
                     </div>
                 </div>
             </div>
         </div>
-        {% endif %}
         {% endfor %}
     </div>
 </div>
@@ -131,20 +147,21 @@
 {% if pages > 1 %}
 <nav class="d-flex justify-content-center mt-4 mb-4">
     <ul class="pagination">
-        <li class="page-item {{ page <= 1 ? 'disabled' : '' }}">
-            <a class="page-link" href="?page={{ page - 1 }}">&laquo;</a>
-        </li>
+        <li class="page-item {{ page <= 1 ? 'disabled' : '' }}"><a class="page-link" href="?page={{ page - 1 }}">&laquo;</a></li>
         {% for p in range(max(1, page - 3), min(pages, page + 3)) %}
-        <li class="page-item {{ p == page ? 'active' : '' }}">
-            <a class="page-link" href="?page={{ p }}">{{ p }}</a>
-        </li>
+        <li class="page-item {{ p == page ? 'active' : '' }}"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
         {% endfor %}
-        <li class="page-item {{ page >= pages ? 'disabled' : '' }}">
-            <a class="page-link" href="?page={{ page + 1 }}">&raquo;</a>
-        </li>
+        <li class="page-item {{ page >= pages ? 'disabled' : '' }}"><a class="page-link" href="?page={{ page + 1 }}">&raquo;</a></li>
     </ul>
 </nav>
 {% endif %}
 
 {% endif %}
+
+<style>
+@media (max-width: 991px) {
+    .hero-euronews { flex-direction: column !important; }
+    .hero-euronews > div { flex: none !important; width: 100% !important; padding: 0 !important; margin: 0 0 1rem 0 !important; border-left: none !important; }
+}
+</style>
 {% endblock %}
