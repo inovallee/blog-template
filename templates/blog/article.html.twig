@@ -260,102 +260,115 @@
 </div>
 
 {% else %}
-{# ===== ACTUALITÉ: centered, clean, Le Parisien style ===== #}
-<div style="max-width:780px; margin:0 auto; padding:2rem 1.5rem;">
+{# ===== ACTUALITÉ — Style Le Parisien: large, aéré, image pleine largeur ===== #}
+
+{# Image hero pleine largeur AVANT le container (comme Le Parisien) #}
+{% if article.imageUrl is defined and article.imageUrl %}
+<div style="max-width:1000px; margin:0 auto;">
+    <figure style="margin:0;">
+        <img src="{{ article.imageUrl }}" alt="{{ article.imageAlt ?? article.title }}" loading="eager"
+             class="w-100" style="aspect-ratio:16/9; object-fit:cover;">
+        {% if article.imageAlt %}
+        <figcaption style="font-size:.72rem; color:var(--text-light); padding:.5rem 1.5rem; font-style:italic;">{{ article.imageAlt }}</figcaption>
+        {% endif %}
+    </figure>
+</div>
+{% endif %}
+
+<div style="max-width:800px; margin:0 auto; padding:2rem 1.5rem 0;">
     <article id="article">
-        <div class="breadcrumb">
+        {# Breadcrumb #}
+        <div class="breadcrumb mb-3">
             <a href="{{ path('app_home') }}">Accueil</a>
             <span class="breadcrumb-separator">/</span>
             <a href="{{ path('app_category_actualites') }}">Actualités</a>
-        </div>
-
-        <div style="color:var(--accent); font-weight:700; font-size:.9rem; margin-bottom:.5rem;">
-            {% if event is defined and event %}
-                <a href="{{ path('app_type', {eventType: event.eventType}) }}" style="color:var(--accent);">{{ event.eventType|capitalize }}</a>
-            {% else %}
-                Actualité
+            {% if event is defined and event and event.city %}
+            <span class="breadcrumb-separator">/</span>
+            <a href="{{ path('app_city', {city: event.city}) }}">{{ event.city }}</a>
             {% endif %}
         </div>
 
-        <h1 style="font-size:2rem; font-weight:800; color:var(--text-dark); line-height:1.25; margin-bottom:1rem;">{{ article.title }}</h1>
+        {# Catégorie en rouge (Le Parisien style) #}
+        <div style="margin-bottom:.6rem;">
+            {% if event is defined and event %}
+            <a href="{{ path('app_type', {eventType: event.eventType}) }}" style="color:var(--red); font-weight:700; font-size:.85rem; text-transform:uppercase; letter-spacing:.03em; text-decoration:none;">
+                {{ event.eventType|capitalize }}
+            </a>
+            {% else %}
+            <span style="color:var(--red); font-weight:700; font-size:.85rem; text-transform:uppercase;">Actualité</span>
+            {% endif %}
+        </div>
 
+        {# Titre large — Le Parisien utilise ~2.2rem, gras, line-height serré #}
+        <h1 style="font-size:2.2rem; font-weight:700; color:var(--text-dark); line-height:1.2; margin-bottom:1.2rem;">{{ article.title }}</h1>
+
+        {# Chapô — Le Parisien: texte plus grand, semi-gras, couleur un peu plus claire #}
         {% if article.excerpt %}
-        <p style="font-size:1.15rem; color:var(--text); line-height:1.6; margin-bottom:1rem;">{{ article.excerpt }}</p>
+        <p style="font-size:1.2rem; color:#444; line-height:1.55; font-weight:500; margin-bottom:1.5rem; border-left:4px solid var(--red); padding-left:1rem;">{{ article.excerpt }}</p>
         {% endif %}
 
-        <div style="font-size:.82rem; color:var(--text-light); margin-bottom:1.5rem;">
-            Par {{ domain }}
-            <span style="display:block; color:var(--accent); margin-top:.2rem;">Le {{ article.publishedAt ? article.publishedAt|date('d/m/Y') : article.createdAt|date('d/m/Y') }} · {{ readingTime }} min de lecture</span>
+        {# Meta: auteur + date + temps de lecture #}
+        <div style="font-size:.82rem; color:var(--text-light); margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid var(--border);">
+            <div>Par <strong style="color:var(--text-dark);">{{ article.authorName ?? domain }}</strong></div>
+            <div style="color:var(--accent); margin-top:.2rem;">
+                Le {{ article.publishedAt ? article.publishedAt|date('d/m/Y à H\\hi') : article.createdAt|date('d/m/Y') }}
+                · {{ readingTime }} min de lecture
+            </div>
         </div>
 
+        {# Badges ville + catégorie #}
         {% if event is defined and event %}
-        <div style="margin-bottom:1.5rem;">
+        <div style="margin-bottom:1.5rem; display:flex; gap:.5rem; flex-wrap:wrap;">
             {% if event.city %}
-            <a href="{{ path('app_city', {city: event.city}) }}" class="badge text-decoration-none" style="background:var(--bg-alt); color:var(--text-dark); font-size:.78rem; border:1px solid var(--border);">
-                <i class="bi bi-geo-alt-fill me-1" style="color:var(--accent);"></i>{{ event.city }}
+            <a href="{{ path('app_city', {city: event.city}) }}" class="badge text-decoration-none" style="background:var(--bg-alt); color:var(--text-dark); font-size:.78rem; border:1px solid var(--border); padding:.4rem .8rem;">
+                <i class="bi bi-geo-alt-fill me-1" style="color:var(--red);"></i>{{ event.city }}
             </a>
             {% endif %}
-            <a href="{{ path('app_type', {eventType: event.eventType}) }}" class="badge text-decoration-none" style="background:var(--bg-alt); color:var(--text-dark); font-size:.78rem; border:1px solid var(--border);">
+            <a href="{{ path('app_type', {eventType: event.eventType}) }}" class="badge text-decoration-none" style="background:var(--bg-alt); color:var(--text-dark); font-size:.78rem; border:1px solid var(--border); padding:.4rem .8rem;">
                 <i class="bi bi-tag-fill me-1" style="color:var(--accent);"></i>{{ event.eventType }}
             </a>
         </div>
         {% endif %}
 
-        {% if article.imageUrl is defined and article.imageUrl %}
-        <figure style="margin:0 0 2rem 0;">
-            <img src="{{ article.imageUrl }}" alt="{{ article.imageAlt ?? article.title }}" loading="eager"
-                 style="width:100%; max-height:480px; object-fit:cover;">
-            {% if article.imageAlt %}
-            <figcaption style="font-size:.72rem; color:var(--text-light); margin-top:.4rem; font-style:italic;">{{ article.imageAlt }}</figcaption>
-            {% endif %}
-        </figure>
-        {% endif %}
-
-        <div class="article-content" id="articleContent">
+        {# Contenu article — typographie aérée #}
+        <div class="article-content" id="articleContent" style="font-size:1.1rem; line-height:1.8;">
             {{ article.content|raw }}
         </div>
 
+        {# Vidéo YouTube #}
         {% if article.videoEmbedCode %}
-        <div class="article-video" style="margin:1.5rem 0;">
-            <div style="font-size:.9rem;color:var(--text);margin-bottom:.6rem;line-height:1.45;">
-                <i class="bi bi-play-circle-fill me-1" style="color:var(--accent);"></i>
+        <div style="margin:2rem 0;">
+            <div style="font-size:.9rem; color:var(--text); margin-bottom:.6rem; line-height:1.45;">
+                <i class="bi bi-play-circle-fill me-1" style="color:var(--red);"></i>
                 {% if article.videoIntro %}{{ article.videoIntro }}{% else %}<strong>Vidéo liée</strong>{% endif %}
                 {% if article.videoTitle %} :
                     <a href="{{ article.videoUrl }}" target="_blank" rel="noopener" style="color:var(--text-dark); text-decoration:none; font-weight:600;">
                         « {{ article.videoTitle }} »
-                    </a>{% if article.videoChannel %} <span style="color:#9ca3af;font-size:.85rem;">— {{ article.videoChannel }}</span>{% endif %}
+                    </a>{% if article.videoChannel %} <span style="color:#9ca3af; font-size:.85rem;">— {{ article.videoChannel }}</span>{% endif %}
                 {% endif %}
             </div>
             {{ article.videoEmbedCode|raw }}
         </div>
         {% endif %}
 
+        {# Tags — Le Parisien style: liens séparés par pipe #}
         {% if article.tags and article.tags|length > 0 %}
-        <div class="tags-list" style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
-            {% for tag in article.tags %}<span class="tag-badge">{{ tag }}</span>{% endfor %}
+        <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+            <div class="tags-list">
+                {% for tag in article.tags %}<span class="tag-badge">{{ tag }}</span>{% endfor %}
+            </div>
         </div>
         {% endif %}
 
-        {# Widget: autres actus dans la même ville (SEO local) #}
-        {% if articleCity is defined and articleCity and relatedCity is defined and relatedCity|length > 0 %}
-        <div style="margin-top:2rem; padding:1.5rem; background:var(--bg-alt); border-radius:8px;">
-            <h3 style="font-size:1.1rem; margin-bottom:1rem;">
-                <i class="bi bi-geo-alt-fill me-1" style="color:var(--accent);"></i>
-                Autres actualités à {{ articleCity }}
-            </h3>
-            <div class="row g-3">
-                {% for r in relatedCity %}
-                <div class="col-md-6">
-                    <a href="/{{ r.slug }}" class="text-decoration-none" style="color:var(--text-dark); display:block; padding:.5rem 0; border-bottom:1px dotted var(--border);">
-                        <strong style="font-size:.9rem; line-height:1.35;">{{ r.title|length > 80 ? r.title[:80] ~ '...' : r.title }}</strong>
-                        {% if r.published_at %}<div style="font-size:.7rem; color:var(--text-light); margin-top:.2rem;">{{ r.published_at|date('d/m/Y') }}</div>{% endif %}
-                    </a>
-                </div>
+        {# Sources #}
+        {% if article.sources and article.sources|length > 0 %}
+        <div class="sources-box" style="margin-top:1.5rem;">
+            <h3><i class="bi bi-journal-bookmark me-1"></i>Sources</h3>
+            <ol>
+                {% for source in article.sources %}
+                <li>{% if source.url is defined %}<a href="{{ source.url }}" target="_blank" rel="noopener nofollow">{{ source.titre ?? 'Source' }}</a>{% else %}{{ source.titre ?? source }}{% endif %}</li>
                 {% endfor %}
-            </div>
-            <a href="{{ path('app_city', {city: articleCity}) }}" style="margin-top:.8rem; display:inline-block; color:var(--accent); text-decoration:none; font-size:.85rem;">
-                Toutes les actualités à {{ articleCity }} →
-            </a>
+            </ol>
         </div>
         {% endif %}
     </article>
