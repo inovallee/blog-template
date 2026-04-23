@@ -228,8 +228,8 @@
         </div>
         {% endif %}
 
-        {# Widget: autres actus dans la même ville (guide evergreen, rare mais utile) #}
-        {% if articleCity is defined and articleCity and relatedCity is defined and relatedCity|length > 0 %}
+        {# Widget désactivé — doublons et articles similaires non pertinents #}
+        {% if false and articleCity is defined and articleCity and relatedCity is defined and relatedCity|length > 0 %}
         <div style="margin-top:2rem; padding:1.5rem; background:var(--bg-alt); border-radius:8px;">
             <h3 style="font-size:1.1rem; margin-bottom:1rem;">
                 <i class="bi bi-geo-alt-fill me-1" style="color:var(--accent);"></i>
