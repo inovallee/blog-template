@@ -301,12 +301,20 @@ class BlogController extends AbstractController
             );
         }
 
+        // Moneysite config (poussé par l'admin via blog_config)
+        $moneysite = null;
+        try {
+            $msRow = $em->getConnection()->fetchAssociative("SELECT config_value FROM blog_config WHERE config_key='moneysite'");
+            if ($msRow) $moneysite = json_decode($msRow['config_value'], true);
+        } catch (\Throwable $e) {}
+
         $response = $this->render('blog/article.html.twig', [
             'article' => $article,
             'tickerArticles' => $tickerArticles,
             'event' => $event,
             'relatedCity' => $relatedCity,
             'articleCity' => $city,
+            'moneysite' => $moneysite,
         ]);
         $response->setPublic();
         $response->setMaxAge(3600);
