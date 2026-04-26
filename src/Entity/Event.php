@@ -27,8 +27,20 @@ class Event
     #[ORM\Column(length: 50)]
     private string $eventType;
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $persons = null;
+
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $sources = null;
+
+    #[ORM\Column(length: 200, nullable: true)]
+    private ?string $location = null;
+
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $country = null;
 
     #[ORM\ManyToOne(targetEntity: Article::class)]
     #[ORM\JoinColumn(nullable: true)]
@@ -48,8 +60,16 @@ class Event
     public function setDepartment(?string $d): static { $this->department = $d; return $this; }
     public function getEventType(): string { return $this->eventType; }
     public function setEventType(string $t): static { $this->eventType = $t; return $this; }
+    public function getPersons(): ?array { return $this->persons; }
+    public function setPersons(?array $p): static { $this->persons = $p; return $this; }
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(?string $d): static { $this->description = $d; return $this; }
+    public function getSources(): ?array { return $this->sources; }
+    public function setSources(?array $s): static { $this->sources = $s; return $this; }
+    public function getLocation(): ?string { return $this->location; }
+    public function setLocation(?string $l): static { $this->location = $l; return $this; }
+    public function getCountry(): ?string { return $this->country; }
+    public function setCountry(?string $c): static { $this->country = $c; return $this; }
     public function getArticle(): ?Article { return $this->article; }
     public function setArticle(?Article $a): static { $this->article = $a; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
