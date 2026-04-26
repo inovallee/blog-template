@@ -287,8 +287,8 @@
 </div>
 {% endif %}
 
-<div style="max-width:800px; margin:0 auto; padding:2rem 1.5rem 0;">
-    <article id="article">
+<div class="article-wrapper">
+    <article class="article-main" id="article">
         {# Breadcrumb #}
         <div class="breadcrumb mb-3">
             <a href="{{ path('app_home') }}">Accueil</a>
@@ -300,7 +300,7 @@
             {% endif %}
         </div>
 
-        {# Catégorie en rouge (Le Parisien style) #}
+        {# Catégorie en rouge #}
         <div style="margin-bottom:.6rem;">
             {% if event is defined and event %}
             <a href="{{ path('app_type', {eventType: event.eventType}) }}" style="color:var(--red); font-weight:700; font-size:.85rem; text-transform:uppercase; letter-spacing:.03em; text-decoration:none;">
@@ -311,15 +311,12 @@
             {% endif %}
         </div>
 
-        {# Titre large — Le Parisien utilise ~2.2rem, gras, line-height serré #}
         <h1 style="font-size:2.2rem; font-weight:700; color:var(--text-dark); line-height:1.2; margin-bottom:1.2rem;">{{ article.title }}</h1>
 
-        {# Chapô — Le Parisien: texte plus grand, semi-gras, couleur un peu plus claire #}
         {% if article.excerpt %}
         <p style="font-size:1.2rem; color:#444; line-height:1.55; font-weight:500; margin-bottom:1.5rem; border-left:4px solid var(--red); padding-left:1rem;">{{ article.excerpt }}</p>
         {% endif %}
 
-        {# Meta: auteur + date + temps de lecture #}
         <div style="font-size:.82rem; color:var(--text-light); margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid var(--border);">
             <div>Par <strong style="color:var(--text-dark);">{{ article.authorName ?? domain }}</strong></div>
             <div style="color:var(--accent); margin-top:.2rem;">
@@ -328,26 +325,11 @@
             </div>
         </div>
 
-        {# Badges ville + catégorie #}
-        {% if event is defined and event %}
-        <div style="margin-bottom:1.5rem; display:flex; gap:.5rem; flex-wrap:wrap;">
-            {% if event.city %}
-            <a href="{{ path('app_city', {city: event.city}) }}" class="badge text-decoration-none" style="background:var(--bg-alt); color:var(--text-dark); font-size:.78rem; border:1px solid var(--border); padding:.4rem .8rem;">
-                <i class="bi bi-geo-alt-fill me-1" style="color:var(--red);"></i>{{ event.city }}
-            </a>
-            {% endif %}
-            <a href="{{ path('app_type', {eventType: event.eventType}) }}" class="badge text-decoration-none" style="background:var(--bg-alt); color:var(--text-dark); font-size:.78rem; border:1px solid var(--border); padding:.4rem .8rem;">
-                <i class="bi bi-tag-fill me-1" style="color:var(--accent);"></i>{{ event.eventType }}
-            </a>
-        </div>
-        {% endif %}
-
-        {# Contenu article — typographie aérée #}
+        {# Contenu article #}
         <div class="article-content" id="articleContent" style="font-size:1.1rem; line-height:1.8;">
             {{ article.content|raw }}
         </div>
 
-        {# Vidéo YouTube #}
         {% if article.videoEmbedCode %}
         <div style="margin:2rem 0;">
             <div style="font-size:.9rem; color:var(--text); margin-bottom:.6rem; line-height:1.45;">
@@ -363,7 +345,6 @@
         </div>
         {% endif %}
 
-        {# Tags — Le Parisien style: liens séparés par pipe #}
         {% if article.tags and article.tags|length > 0 %}
         <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border);">
             <div class="tags-list">
@@ -372,7 +353,6 @@
         </div>
         {% endif %}
 
-        {# Sources #}
         {% if article.sources and article.sources|length > 0 %}
         <div class="sources-box" style="margin-top:1.5rem;">
             <h3><i class="bi bi-journal-bookmark me-1"></i>Sources</h3>
@@ -383,19 +363,69 @@
             </ol>
         </div>
         {% endif %}
-        {# Moneysite CTA — lien configurable via admin #}
-        {% if moneysite is defined and moneysite and moneysite.url %}
-        <div style="margin-top:2.5rem; padding:1.5rem; background:var(--primary-dark); border-radius:4px; text-align:center; color:#fff;">
-            {% if moneysite.image %}
-            <img src="{{ moneysite.image }}" alt="{{ moneysite.name }}" style="max-height:60px; margin-bottom:.8rem;" loading="lazy">
-            {% endif %}
-            <h3 style="font-weight:700; font-size:1.1rem; margin-bottom:.5rem; color:#fff;">{{ moneysite.cta ?? 'Découvrez nos services' }}</h3>
-            <a href="{{ moneysite.url }}" target="_blank" rel="noopener" class="btn" style="background:var(--accent); color:#fff; font-weight:600; padding:.5rem 1.5rem;">
-                Visiter {{ moneysite.name ?? 'notre site' }} →
-            </a>
-        </div>
-        {% endif %}
     </article>
+
+    {# ===== SIDEBAR: OSINT + Moneysite ===== #}
+    <aside class="article-sidebar" style="order:1;">
+        <div class="toc-sticky">
+            {# Carte OSINT — résumé structuré de l'événement #}
+            {% if event is defined and event %}
+            <div style="background:var(--bg-alt); border:1px solid var(--border); border-radius:4px; padding:1rem; margin-bottom:1rem;">
+                <div style="font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-light); margin-bottom:.8rem;">
+                    <i class="bi bi-info-circle me-1"></i>En bref
+                </div>
+                {% if event.eventType %}
+                <div style="margin-bottom:.6rem; display:flex; align-items:center; gap:.5rem;">
+                    <i class="bi bi-tag-fill" style="color:var(--red); font-size:.75rem;"></i>
+                    <a href="{{ path('app_type', {eventType: event.eventType}) }}" style="font-size:.82rem; font-weight:600; color:var(--text-dark); text-decoration:none; text-transform:capitalize;">{{ event.eventType }}</a>
+                </div>
+                {% endif %}
+                {% if event.city %}
+                <div style="margin-bottom:.6rem; display:flex; align-items:center; gap:.5rem;">
+                    <i class="bi bi-geo-alt-fill" style="color:var(--accent); font-size:.75rem;"></i>
+                    <a href="{{ path('app_city', {city: event.city}) }}" style="font-size:.82rem; color:var(--text-dark); text-decoration:none;">{{ event.city }}{% if event.department %} ({{ event.department }}){% endif %}</a>
+                </div>
+                {% endif %}
+                {% if event.eventDate %}
+                <div style="margin-bottom:.6rem; display:flex; align-items:center; gap:.5rem;">
+                    <i class="bi bi-calendar-event" style="color:var(--accent); font-size:.75rem;"></i>
+                    <span style="font-size:.82rem; color:var(--text);">{{ event.eventDate|date('d/m/Y') }}</span>
+                </div>
+                {% endif %}
+                {% if event.persons is defined and event.persons is iterable and event.persons|length > 0 %}
+                <div style="margin-bottom:.4rem; display:flex; align-items:flex-start; gap:.5rem;">
+                    <i class="bi bi-people-fill" style="color:var(--accent); font-size:.75rem; margin-top:.15rem;"></i>
+                    <div style="font-size:.78rem; color:var(--text-light); line-height:1.4;">
+                        {% for person in event.persons[:4] %}
+                        <div><strong>{{ person.name }}</strong>{% if person.role %} — {{ person.role }}{% endif %}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% if event.description %}
+                <div style="margin-top:.6rem; padding-top:.6rem; border-top:1px solid var(--border); font-size:.78rem; color:var(--text-light); line-height:1.45;">
+                    {{ event.description|length > 200 ? event.description[:200] ~ '...' : event.description }}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {# Bannière Moneysite #}
+            {% if moneysite is defined and moneysite and moneysite.url %}
+            <div style="background:var(--primary-dark); border-radius:4px; padding:1rem; text-align:center;">
+                {% if moneysite.image %}
+                <a href="{{ moneysite.url }}" target="_blank" rel="noopener">
+                    <img src="{{ moneysite.image }}" alt="{{ moneysite.name }}" style="width:100%; border-radius:3px; margin-bottom:.8rem;" loading="lazy">
+                </a>
+                {% endif %}
+                <div style="font-size:.85rem; font-weight:700; color:#fff; margin-bottom:.6rem;">{{ moneysite.cta ?? 'Découvrez nos services' }}</div>
+                <a href="{{ moneysite.url }}" target="_blank" rel="noopener" style="display:inline-block; background:var(--accent); color:#fff; font-weight:600; font-size:.82rem; padding:.45rem 1.2rem; border-radius:3px; text-decoration:none;">
+                    {{ moneysite.name ?? 'En savoir plus' }} →
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </aside>
 </div>
 {% endif %}
 {% endblock %}
